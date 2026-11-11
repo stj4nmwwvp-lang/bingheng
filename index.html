@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>冰衡 · 短道速滑训练决策</title>
+<style>
+:root{
+  --ink:#0B1B2B; --navy:#0B2C4D; --ice:#1B76B0; --cyan:#4FB3DA;
+  --mist:#A8D8EC; --pale:#E8F2F8; --alt:#F4F8FB;
+  --gray:#5B6B7A; --gray35:#A9B7C3; --line:#DCE6EE;
+  --ok:#2E7D6F; --amber:#C9A227; --risk:#B3261E; --warn:#C84600;
+  --r:14px; --sh:0 1px 2px rgba(11,44,77,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Microsoft YaHei","微软雅黑",-apple-system,sans-serif;
+  background:#EEF2F6; color:var(--ink); font-size:14px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-variant-numeric:tabular-nums}
+button{font-family:inherit}
+
+/* ---- 外壳 ---- */
+.topbar{
+  position:sticky; top:0; z-index:50; background:#fff; border-bottom:1px solid var(--line);
+  padding:0 24px; height:60px; display:flex; align-items:center; gap:18px;
+}
+.logo{display:flex; align-items:center; gap:10px}
+.logo .m{width:30px;height:30px;border-radius:9px;background:var(--navy);display:grid;place-items:center}
+.logo .t{font-weight:700;color:var(--navy);font-size:15px;letter-spacing:.02em}
+.logo .s{font-size:9px;color:var(--gray35);letter-spacing:.16em;font-family:Consolas,monospace}
+nav{display:flex; gap:2px; margin-left:12px; overflow:auto}
+nav button{
+  border:none; background:transparent; color:var(--gray); font-size:13.5px;
+  padding:8px 13px; border-radius:9px; cursor:pointer; white-space:nowrap;
+}
+nav button:hover{background:var(--alt); color:var(--navy)}
+nav button.on{background:var(--pale); color:var(--navy); font-weight:600}
+.meta{margin-left:auto; font-size:12px; color:var(--gray35); white-space:nowrap}
+.meta b{color:var(--gray); font-weight:600}
+
+.wrap{max-width:1180px; margin:0 auto; padding:24px}
+.view{display:none} .view.on{display:block}
+
+/* ---- 通用 ---- */
+.head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px}
+.head h1{font-size:22px; font-weight:700; color:var(--navy); letter-spacing:.01em}
+.head .sub{font-size:12.5px; color:var(--gray)}
+.head .right{margin-left:auto; display:flex; gap:8px}
+
+.btn{
+  display:inline-flex; align-items:center; gap:6px; padding:9px 15px; border-radius:10px;
+  border:1px solid var(--line); background:#fff; color:var(--navy);
+  font-size:13px; font-weight:600; cursor:pointer; transition:.15s;
+}
+.btn:hover{border-color:var(--mist); background:var(--alt)}
+.btn.primary{background:var(--ice); border-color:var(--ice); color:#fff}
+.btn.primary:hover{background:#17679b}
+.btn.ghost{border-color:transparent; color:var(--gray)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn.sm{padding:6px 11px; font-size:12px; border-radius:8px}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.card .hd{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.card .hd h3{font-size:14px;font-weight:700;color:var(--navy)}
+.card .hd .hint{margin-left:auto;font-size:11.5px;color:var(--gray35)}
+.card .bd{padding:18px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.85}
+.pill.nodot::before{display:none}
+.pill.ok{background:rgba(46,125,111,.1);color:var(--ok)}
+.pill.amber{background:rgba(201,162,39,.15);color:#8f7118}
+.pill.risk{background:rgba(179,38,30,.1);color:var(--risk)}
+.pill.mute{background:var(--alt);color:var(--gray)}
+.pill.ice{background:var(--pale);color:var(--ice)}
+
+.banner{display:flex;align-items:center;gap:10px;padding:11px 15px;border-radius:11px;font-size:12.5px;margin-bottom:16px;border:1px solid}
+.banner.warn{background:#FDF6E3;border-color:#EBD9A6;color:#7A5E12}
+.banner.err{background:rgba(179,38,30,.05);border-color:rgba(179,38,30,.18);color:var(--risk)}
+.banner .r{margin-left:auto;display:flex;gap:8px}
+
+/* ---- C1 今日卡 ---- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.stat{
+  background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;
+  cursor:pointer;transition:.18s;position:relative;overflow:hidden;
+}
+.stat:hover{border-color:var(--mist)}
+.stat:active{transform:translateY(1px)}
+.stat.on{border-color:var(--ice);box-shadow:0 0 0 3px rgba(27,118,176,.1);transform:translateY(-3px)}
+.stat .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.stat .k{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+.stat .d{font-size:11.5px;color:var(--gray35);margin-top:2px}
+.stat .v{font-size:38px;font-weight:700;line-height:1.15;margin-top:10px;letter-spacing:-.02em}
+.stat .v small{font-size:14px;font-weight:600;color:var(--gray35);margin-left:4px}
+
+.list{display:flex;flex-direction:column}
+.row{
+  display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;
+  padding:14px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:.14s;
+}
+.row:last-child{border-bottom:none}
+.row:hover{background:#FBFDFE}
+.row:active{background:var(--alt)}
+.av{
+  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  font-size:13px;font-weight:700;background:var(--alt);color:var(--gray);flex:none;
+}
+.av.risk{background:rgba(179,38,30,.08);color:var(--risk)}
+.av.amber{background:rgba(201,162,39,.14);color:#8f7118}
+.nm{font-weight:600;color:var(--navy);font-size:14px}
+.why{font-size:12px;color:var(--gray);margin-top:1px}
+.act{font-size:12.5px;font-weight:600;color:var(--navy);text-align:right}
+.act small{display:block;font-size:11px;color:var(--gray35);font-weight:400}
+.chev{color:var(--gray35);font-size:16px}
+
+/* ---- 图表 ---- */
+.chart{width:100%;display:block}
+.legend{display:flex;gap:16px;font-size:11.5px;color:var(--gray);margin-top:10px;flex-wrap:wrap}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+/* ---- C3 减量 ---- */
+.count{display:flex;align-items:flex-end;gap:14px;margin-bottom:6px}
+.count .big{font-size:62px;font-weight:700;color:var(--navy);line-height:1;letter-spacing:-.03em}
+.count .u{padding-bottom:9px;font-size:13px;color:var(--gray)}
+.bars{display:flex;align-items:flex-end;gap:12px;height:190px;padding-top:10px}
+.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bars .col{width:100%;max-width:44px;border-radius:7px 7px 3px 3px;background:var(--ice);transition:height .8s cubic-bezier(.2,.8,.2,1)}
+.bars .b.rest .col{background:var(--mist)}
+.bars .b.race .col{background:var(--risk)}
+.bars .lb{font-size:10.5px;color:var(--gray35);margin-top:8px}
+.bars .pv{font-size:10.5px;color:var(--navy);font-weight:700;margin-bottom:6px}
+
+/* ---- C4 个体 ---- */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.kpi .k{font-size:11.5px;color:var(--gray)}
+.kpi .v{font-size:24px;font-weight:700;color:var(--navy);margin-top:4px;letter-spacing:-.01em}
+.kpi .v span{font-size:11px;font-weight:600;color:var(--gray35);margin-left:3px}
+.kpi .d{font-size:11px;margin-top:2px;color:var(--gray35)}
+.kpi .d.bad{color:var(--risk)} .kpi .d.good{color:var(--ok)}
+
+.two{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+
+/* ---- C5 选苗 ---- */
+.switch{display:inline-flex;align-items:center;gap:10px;font-size:13px;color:var(--navy);font-weight:600}
+.sw{width:46px;height:26px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;transition:.2s;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.sw.on{background:var(--ice)} .sw.on::after{transform:translateX(20px)}
+.rank{display:flex;flex-direction:column}
+.rank .r{display:grid;grid-template-columns:auto 1fr 92px 92px 70px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line)}
+.rank .r:last-child{border-bottom:none}
+.pct{font-size:12px;font-weight:700;text-align:right}
+.pct .old{color:var(--gray35);text-decoration:line-through;font-weight:400;margin-right:6px}
+.up{color:var(--ok)} .down{color:var(--risk)}
+
+/* ---- H1 设备 ---- */
+.dev{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.devrow{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
+.devrow:last-child{border-bottom:none}
+.devrow span{color:var(--gray)}
+.devrow b{color:var(--navy)}
+.battery{display:flex;align-items:center;gap:10px}
+.bt{width:64px;height:12px;border:1.5px solid var(--gray35);border-radius:3px;padding:1.5px;position:relative}
+.bt::after{content:"";position:absolute;right:-4px;top:3px;width:2.5px;height:5px;background:var(--gray35);border-radius:0 1px 1px 0}
+.bt i{display:block;height:100%;background:var(--ok);border-radius:1px;transition:width .3s}
+
+/* ---- 空态 ---- */
+.empty{padding:46px 20px;text-align:center}
+.empty .ic{width:52px;height:52px;border-radius:15px;background:var(--alt);margin:0 auto 14px;display:grid;place-items:center;color:var(--gray35);font-size:22px}
+.empty h4{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.empty p{font-size:12.5px;color:var(--gray);max-width:340px;margin:0 auto 14px}
+
+.toast{
+  position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);
+  background:var(--navy);color:#fff;padding:11px 20px;border-radius:11px;font-size:13px;
+  opacity:0;pointer-events:none;transition:.25s;z-index:200;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.dim{opacity:.42;pointer-events:none}
+
+
+/* ---- 首次进入引导 ---- */
+#guide{position:fixed;inset:0;background:rgba(11,44,77,.42);z-index:400;
+  display:none;place-items:center;padding:24px;backdrop-filter:blur(2px)}
+#guide.on{display:grid}
+#guide .box{background:#fff;border-radius:18px;max-width:560px;width:100%;
+  padding:28px 30px 22px;box-shadow:0 24px 64px rgba(11,44,77,.25)}
+#guide .k{font-size:11.5px;letter-spacing:.14em;color:#A9B7C3;font-weight:700}
+#guide h3{font-size:21px;font-weight:700;color:#0B2C4D;margin:6px 0 16px}
+#guide ol{list-style:none;counter-reset:g;margin-bottom:20px}
+#guide li{counter-increment:g;position:relative;padding:12px 0 12px 44px;
+  border-bottom:1px solid #EEF3F7;font-size:13.5px;line-height:1.6;color:#22323F}
+#guide li:last-child{border-bottom:none}
+#guide li::before{content:counter(g);position:absolute;left:0;top:11px;
+  width:26px;height:26px;border-radius:50%;background:#1B76B0;color:#fff;
+  display:grid;place-items:center;font-size:13px;font-weight:700}
+#guide .foot{display:flex;align-items:center;gap:12px}
+#guide .tip{font-size:11.5px;color:#A9B7C3;flex:1}
+#guide button{border:none;background:#1B76B0;color:#fff;font-weight:700;
+  padding:10px 22px;border-radius:11px;font-size:13.5px;cursor:pointer;font-family:inherit}
+#guide button:hover{background:#17679b}
+#helpBtn{position:fixed;right:16px;bottom:52px;z-index:150;width:34px;height:34px;
+  border-radius:50%;border:1px solid #DCE6EE;background:#fff;color:#5B6B7A;
+  font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(11,44,77,.1)}
+#helpBtn:hover{border-color:#1B76B0;color:#1B76B0}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="m"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 17c4 0 5-9 9-9s5 9 9 9"/></svg></div>
+    <div><div class="t">冰衡</div><div class="s">BINGHENG</div></div>
+  </div>
+  <nav id="nav">
+    <button data-v="c1" class="on">今日训练卡</button>
+    <button data-v="c2">周负荷</button>
+    <button data-v="c3">赛前减量</button>
+    <button data-v="c4">运动员详情</button>
+    <button data-v="c5">选苗</button>
+    <button data-v="h1">采集端</button>
+  </nav>
+  <div class="meta">七台河 · 重点班　<b id="clock">07:20</b></div>
+</div>
+
+<div class="wrap">
+
+<!-- ================= C1 ================= -->
+<section class="view on" id="v-c1">
+  <div class="banner err" id="c1-err" style="display:none">
+    <span>⚠</span> 服务端连接失败，显示的是本地缓存数据
+    <div class="r"><button class="btn sm" onclick="retry()">重试</button></div>
+  </div>
+
+  <div class="head">
+    <h1>今日训练卡</h1>
+    <div class="sub">2026-11-07 周五 · 备战期第 3 周 · 数据已更新 07:20</div>
+    <div class="right">
+      <button class="btn sm" onclick="toggleEmpty()" id="emptyBtn">模拟：今日无课</button>
+      <button class="btn sm" onclick="toast('训练单已导出（mock）')">导出训练单</button>
+    </div>
+  </div>
+
+  <div id="c1-body">
+    <div class="stats" id="stats"></div>
+
+    <div class="card">
+      <div class="hd"><h3>今日名单</h3><span class="hint">按风险排序 · 点一行看详情</span></div>
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+
+  <div id="c1-empty" style="display:none">
+    <div class="card"><div class="empty">
+      <div class="ic">❄</div>
+      <h4>今天没有训练课</h4>
+      <p>建议运动员完成恢复打卡：睡眠、晨脉、主观疲劳。数据进来自动更新明日的决策卡。</p>
+      <button class="btn primary" onclick="toast('已下发恢复打卡提醒')">下发恢复打卡</button>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= C2 ================= -->
+<section class="view" id="v-c2">
+  <div class="head">
+    <h1>周负荷</h1>
+    <div class="sub">第 45 周 · 全队 25 人 · <b style="color:var(--risk)">3 人超阈</b></div>
+    <div class="right"><button class="btn sm" onclick="toast('已生成周报')">生成周报</button></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="hd"><h3>ACWR 走势</h3><span class="hint">安全区 0.8–1.3</span></div>
+    <div class="bd">
+      <svg class="chart" id="acwr" viewBox="0 0 720 220" height="220" preserveAspectRatio="none"></svg>
+      <div class="legend">
+        <span><i style="background:var(--ice)"></i>ACWR（7/28）</span>
+        <span><i style="background:var(--mist)"></i>慢性负荷</span>
+        <span><i style="background:#EBD9A6"></i>安全区 0.8–1.3</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="two" style="grid-template-columns:1fr 340px">
+    <div class="card">
+      <div class="hd"><h3>异常名单</h3><span class="hint">2 人</span></div>
+      <div class="list" id="abnormal"></div>
+    </div>
+    <div class="card">
+      <div class="hd"><h3>本周训练构成</h3></div>
+      <div class="bd" id="compose"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= C3 ================= -->
+<section class="view" id="v-c3">
+  <div class="head">
+    <h1>赛前减量</h1>
+    <div class="sub">省锦标赛 · 2026-11-17</div>
+    <div class="right"><button class="btn primary" onclick="toast('减量计划已下发给 25 人')">下发减量计划</button></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="bd">
+      <div class="count"><div class="big num" id="days">10</div><div class="u">天后比赛 · 减量期</div></div>
+      <div style="font-size:12.5px;color:var(--gray);margin-bottom:4px">每日负荷目标（% 基线）</div>
+      <div class="bars" id="bars"></div>
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <div class="hd"><h3>今日建议</h3></div>
+      <div class="bd" style="font-size:13.5px;line-height:1.8;color:#22323F">
+        总量降至基线 <b style="color:var(--ice)">60%</b>，保留 <b>2 组 500m 起跑速度课</b>；
+        冰上时间不超过 <b>60 分钟</b>。<br>
+        减量期只减量、不减强度——强度是比赛感觉，减掉就找不回来了。
+      </div>
+    </div>
+    <div class="card">
+      <div class="hd"><h3>规则</h3></div>
+      <div class="bd" style="font-size:13px;color:var(--gray);line-height:2">
+        · 赛前 7–10 天开始减量<br>
+        · 总量降到 60–70%，强度保留<br>
+        · 减量期不做新动作教学
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= C4 ================= -->
+<section class="view" id="v-c4">
+  <div class="head">
+    <h1>王某 <span class="pill amber" style="vertical-align:5px;margin-left:6px">建议减量</span></h1>
+    <div class="sub">重点班 · 16 岁 · 主项 1000m</div>
+    <div class="right">
+      <button class="btn sm" onclick="toast('已加入减量名单')">加入减量名单</button>
+      <button class="btn sm" onclick="toast('已通知队医')">通知队医</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h3>负荷 vs 恢复</h3><span class="hint">HRV 归一化后叠加</span></div>
+    <div class="bd"><svg class="chart" id="c4chart" viewBox="0 0 980 240" height="240" preserveAspectRatio="none"></svg>
+      <div class="legend">
+        <span><i style="background:var(--ice)"></i>训练负荷</span>
+        <span><i style="background:var(--cyan)"></i>恢复水平</span>
+        <span><i style="background:var(--risk)"></i>负荷超过恢复</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpis" id="c4kpi"></div>
+
+  <div class="card">
+    <div class="hd"><h3>判断依据</h3></div>
+    <div class="bd" style="font-size:13.5px;line-height:1.9;color:#22323F">
+      近 7 天负荷持续高于恢复，<b>ACWR 1.62</b> 进入超阈区；HRV 较基线下降 18%，晨脉 +9bpm。
+      建议今天降到基线 <b>60%</b>，并补一次睡眠记录。
+    </div>
+  </div>
+</section>
+
+<!-- ================= C5 ================= -->
+<section class="view" id="v-c5">
+  <div class="head">
+    <h1>选苗排行榜</h1>
+    <div class="sub">2026 秋季选苗 · 12–13 岁组 · 样本 68 人</div>
+    <div class="right"><button class="btn sm" onclick="toast('选苗建议已导出')">导出选苗建议</button></div>
+  </div>
+
+  <div class="banner warn">
+    <span>ⓘ</span> 附加模块，不参与每日训练决策。只回答一个问题：<b>谁可能被低估了</b>。
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="bd" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div class="switch">
+        <div class="sw" id="sw"></div>
+        <span>发育校正</span>
+      </div>
+      <span style="font-size:12px;color:var(--gray35)" id="swhint">当前：未校正（按日历年龄排序）</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h3>排行榜</h3><span class="hint" id="rankhint">原始百分位</span></div>
+    <div class="rank" id="rank"></div>
+  </div>
+</section>
+
+<!-- ================= H1 ================= -->
+<section class="view" id="v-h1">
+  <div class="head">
+    <h1>冰刀 IMU 采集</h1>
+    <div class="sub">课次 · 2026-11-07 上午冰上</div>
+  </div>
+
+  <div class="dev">
+    <div class="card">
+      <div class="hd"><h3>设备状态</h3><span class="pill ok" id="syncPill">已同步</span></div>
+      <div class="bd">
+        <div class="devrow"><span>IMU 电量</span>
+          <div class="battery"><div class="bt"><i id="btfill" style="width:86%"></i></div><b>86%</b></div>
+        </div>
+        <div class="devrow"><span>采样率</span><b>200 Hz</b></div>
+        <div class="devrow"><span>心率带</span><b style="color:var(--ok)">已连接</b></div>
+        <div class="devrow"><span>本课已采</span><b class="num" id="dur">00:42:10</b></div>
+        <div class="devrow"><span>时间偏差</span><b>0.3 s</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd"><h3>采集控制</h3></div>
+      <div class="bd">
+        <div style="font-size:12.5px;color:var(--gray);line-height:1.9;margin-bottom:16px">
+          夹在冰刀鞋跟，防水防冰渣；采集滑行姿态、加速度、转向；
+          与心率带时间同步后再开始，否则会出现时间轴错位。
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" id="startBtn" onclick="startRec()">开始记录</button>
+          <button class="btn" id="stopBtn" onclick="stopRec()" disabled>结束并上传</button>
+        </div>
+        <div class="banner warn" style="margin:18px 0 0;display:none" id="warnsync">
+          <span>⚠</span> 未同步，请先戴好设备再开始
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="hd"><h3>指标口径</h3><span class="hint">与第 6 节一致</span></div>
+    <div class="bd" style="font-size:12.5px;color:var(--gray);line-height:2">
+      <b style="color:var(--navy)">TLI 战术负荷</b>：由 IMU 的转向频次、超越次数、弯道 G 值加权，反映短道专项外部负荷。 ·
+      <b style="color:var(--navy)">sRPE 负荷</b>：主观疲劳（1–10）× 课时长（min）。<br>
+      <span style="color:var(--warn)">诚实说明：ACWR 的预测效度在学界有争议（数学耦合），所以产品不做单指标预警，只做多指标融合 + 教练确认。</span>
+    </div>
+  </div>
+</section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 数据 ================= */
+let ATHLETES = [
+  {id:'w', n:'王某', ini:'王', lv:'amber', why:'ACWR 1.62 ↑ · HRV 下降 18%', act:'减量', sub:'建议 60%', fi:72},
+  {id:'l', n:'李某', ini:'李', lv:'risk',  why:'晨脉 +9bpm · 主观疲劳 8/10', act:'停训', sub:'转队医', fi:84},
+  {id:'z', n:'张某', ini:'张', lv:'ok',    why:'ACWR 1.05 · HRV 平稳', act:'正常', sub:'100%', fi:41},
+  {id:'q', n:'钱某', ini:'钱', lv:'ok',    why:'ACWR 0.92 · 恢复良好', act:'正常', sub:'100%', fi:38},
+  {id:'s', n:'孙某', ini:'孙', lv:'amber', why:'单调性 2.4 · 强度过于单一', act:'关注', sub:'调整结构', fi:64},
+  {id:'liu',n:'刘某', ini:'刘', lv:'mute', why:'昨日未打卡 · 数据缺失', act:'缺数据', sub:'补录晨脉', fi:null}
+];
+
+let STATS = [
+  {k:'正常训练', d:'负荷可维持基线', v:18, c:'var(--ok)'},
+  {k:'建议减量', d:'降到基线 60–70%', v:5,  c:'var(--amber)'},
+  {k:'停训观察', d:'转队医，不练', v:2,  c:'var(--risk)'}
+];
+
+let ABNORMAL = [
+  {n:'王某', ini:'王', why:'ACWR 1.62 · 连续 6 天训练', lv:'risk', act:'超阈', sub:'减量'},
+  {n:'孙某', ini:'孙', why:'单调性 2.4 · 强度过于单一', lv:'amber', act:'关注', sub:'调整'}
+];
+
+let RANK = [
+  {n:'陈某某', ini:'陈', tag:'PHV 前 · 出生 Q4（偏小）', raw:40, adj:62, mark:'观察', up:true},
+  {n:'周某某', ini:'周', tag:'PHV 后 · 出生 Q1（偏大）', raw:12, adj:38, mark:'重点', up:true},
+  {n:'吴某某', ini:'吴', tag:'PHV 中 · 数据完整', raw:25, adj:24, mark:'观察', up:false},
+  {n:'郑某某', ini:'郑', tag:'PHV 前 · 出生 Q3', raw:55, adj:71, mark:'观察', up:true},
+  {n:'冯某某', ini:'冯', tag:'PHV 后 · 出生 Q2', raw:30, adj:19, mark:'回落', up:false}
+];
+
+/* ================= 工具 ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const nf = n => n.toLocaleString('en-US');
+let toastTimer;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('on'), 2000);
+}
+const STATIC_MODE = !!new URLSearchParams(location.search).get('static');
+function animateDraw(el, ms=1000, delay=0){
+  if(STATIC_MODE){ el.style.strokeDasharray = 'none'; el.style.strokeDashoffset = 0; return; }
+  let len = 0;
+  try { len = el.getTotalLength(); } catch(e) { return; }
+  if(!len) return;
+  el.style.strokeDasharray = len;
+  el.style.strokeDashoffset = len;
+  setTimeout(()=>{
+    const t0 = performance.now();
+    (function step(t){
+      const p = Math.min(1, (t - t0) / ms);
+      el.style.strokeDashoffset = len * (1 - p);
+      if(p < 1) requestAnimationFrame(step);
+    })(t0);
+  }, delay);
+}
+
+function roll(el, to, ms=900){
+  if(STATIC_MODE){ el.textContent = to; return; }
+  const from = 0, t0 = performance.now();
+  function step(t){
+    const p = Math.min(1, (t - t0) / ms);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(from + (to - from) * e);
+    if(p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ================= 导航 ================= */
+$$('#nav button').forEach(b=>{
+  b.onclick = ()=>{
+    $$('#nav button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    $$('.view').forEach(v=>v.classList.remove('on'));
+    $('#v-' + b.dataset.v).classList.add('on');
+    window.scrollTo(0,0);
+    if(b.dataset.v === 'c2') drawAcwr();
+    if(b.dataset.v === 'c3') drawBars();
+    if(b.dataset.v === 'c4') { drawC4(); rollKpi(); }
+  };
+});
+
+/* ================= C1 ================= */
+function buildStats(){
+  $('#stats').innerHTML = STATS.map((s,i)=>`
+    <div class="stat${i===0?' on':''}" data-i="${i}">
+      <div class="bar" style="background:${s.c}"></div>
+      <div class="k">${s.k}</div>
+      <div class="d">${s.d}</div>
+      <div class="v num" style="color:${s.c}"><span data-v="${s.v}">0</span><small>人</small></div>
+    </div>`).join('');
+  $$('.stat').forEach(el=>{
+    el.onclick = ()=>{
+      $$('.stat').forEach(x=>x.classList.remove('on'));
+      el.classList.add('on');
+      const i = +el.dataset.i;
+      renderList(i);
+    };
+    const v = el.querySelector('[data-v]');
+    roll(v, +v.dataset.v);
+  });
+}
+
+function renderList(filter){
+  const map = {0:'ok', 1:'amber', 2:'risk'};
+  let rows = ATHLETES;
+  if(filter !== undefined) rows = ATHLETES.filter(a=>a.lv === map[filter]);
+  if(!rows.length){
+    $('#list').innerHTML = `<div class="empty"><div class="ic">○</div><h4>该分组下暂无运动员</h4><p>点上面的「正常训练」回到全部名单。</p></div>`;
+    return;
+  }
+  $('#list').innerHTML = rows.map(a=>`
+    <div class="row" data-id="${a.id}">
+      <div class="av ${a.lv==='mute'?'':a.lv}">${a.ini}</div>
+      <div><div class="nm">${a.n}</div><div class="why">${a.why}</div></div>
+      <div class="act">${a.act}<small>${a.sub}</small></div>
+      <div class="chev">›</div>
+    </div>`).join('');
+  $$('#list .row').forEach(r=>{
+    r.onclick = ()=>{
+      const a = ATHLETES.find(x=>x.id === r.dataset.id);
+      if(a.lv === 'mute'){ toast('请先补录晨脉与主观疲劳'); return; }
+      goView('c4');
+    };
+  });
+}
+
+function toggleEmpty(){
+  const on = $('#c1-empty').style.display === 'none';
+  $('#c1-body').style.display = on ? 'none' : '';
+  $('#c1-empty').style.display = on ? '' : 'none';
+  $('#emptyBtn').textContent = on ? '模拟：恢复正常' : '模拟：今日无课';
+}
+function retry(){ $('#c1-err').style.display='none'; toast('已重新连接'); }
+
+window.addEventListener('offline', ()=> $('#c1-err').style.display='');
+window.addEventListener('online', ()=> { $('#c1-err').style.display='none'; });
+
+/* ================= C2 ================= */
+function drawAcwr(){
+  const svg = $('#acwr');
+  const W=720,H=220,L=44,R=706,T=22,B=178;
+  const acute = (window.ACWR_SERIES && window.ACWR_SERIES.length > 3)
+    ? window.ACWR_SERIES
+    : [.9,1.0,1.1,1.2,1.28,1.35,1.42,1.5,1.55,1.62,1.58,1.5,1.42,1.36,
+       1.3,1.26,1.2,1.16,1.12,1.08,1.05,1.02,1.0,.98,.96,.94,.92,.9];
+  const days = acute.length;
+  const xy=(i,v)=>{const x=L+(R-L)*i/(days-1); const y=B-(v-.6)/(1.9-.6)*(B-T); return [x,y];};
+  let d='';
+  acute.forEach((v,i)=>{const [x,y]=xy(i,v); d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);});
+
+  const grid=[0.8,1.0,1.3,1.6];
+  const bandTop=xy(0,1.3)[1], bandBot=xy(0,0.8)[1];
+  svg.innerHTML = `
+    <rect x="${L}" y="${bandTop}" width="${R-L}" height="${bandBot-bandTop}" fill="#FDF6E3" opacity=".85"/>
+    <g stroke="#DCE6EE" stroke-width="1">
+      ${grid.map(v=>`<line x1="${L}" y1="${xy(0,v)[1].toFixed(1)}" x2="${R}" y2="${xy(0,v)[1].toFixed(1)}"/>`).join('')}
+    </g>
+    <g font-size="10" fill="#A9B7C3" font-family="Consolas" text-anchor="end">
+      ${grid.map(v=>`<text x="${L-8}" y="${(xy(0,v)[1]+3.5).toFixed(1)}">${v.toFixed(1)}</text>`).join('')}
+    </g>
+    <path d="${d}" fill="none" stroke="#1B76B0" stroke-width="2.4" stroke-linejoin="round"
+          />
+    <g font-size="10" fill="#A9B7C3" font-family="Consolas" text-anchor="middle">
+      <text x="${L}" y="${B+20}">W30</text><text x="${(L+R)/2}" y="${B+20}">W38</text><text x="${R}" y="${B+20}">W45</text>
+    </g>
+    <line x1="${xy(9,1.62)[0]}" y1="${T}" x2="${xy(9,1.62)[0]}" y2="${B}" stroke="#B3261E" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>
+    <circle cx="${xy(9,1.62)[0]}" cy="${xy(9,1.62)[1]}" r="4" fill="#B3261E"/>`;
+  svg.querySelectorAll('path[stroke]').forEach(el=> animateDraw(el, 1100));
+}
+
+function buildAbnormal(){
+  $('#abnormal').innerHTML = ABNORMAL.map(a=>`
+    <div class="row">
+      <div class="av ${a.lv}">${a.ini}</div>
+      <div><div class="nm">${a.n}</div><div class="why">${a.why}</div></div>
+      <div class="act">${a.act}<small>${a.sub}</small></div>
+      <div class="chev">›</div>
+    </div>`).join('');
+  $$('#abnormal .row').forEach(r=> r.onclick = ()=> goView('c4'));
+}
+
+function buildCompose(){
+  const items=[['冰上专项',58,'var(--ice)'],['陆地体能',26,'var(--cyan)'],['速度课',11,'var(--mist)'],['恢复课',5,'var(--ok)']];
+  $('#compose').innerHTML = items.map(([k,p,c])=>`
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">
+        <span style="color:var(--gray)">${k}</span><b class="num">${p}%</b>
+      </div>
+      <div style="height:7px;background:var(--alt);border-radius:4px;overflow:hidden">
+        <div class="bar-grow" style="height:100%;width:${p}%;background:${c};border-radius:4px;transition:width .7s"></div>
+      </div>
+    </div>`).join('');
+  requestAnimationFrame(()=> $$('.bar-grow').forEach(b=> b.style.width = b.style.width));
+}
+
+/* ================= C3 ================= */
+function drawBars(){
+  const plan=[[-10,100],[-9,95],[-8,88],[-7,80],[-6,75],[-5,70],[-4,65],[-3,62],[-2,60],[-1,55],[0,0]];
+  $('#bars').innerHTML = plan.map(([d,p],i)=>{
+    const race = d===0;
+    const cls = race ? 'race' : (p<=62 ? 'rest' : '');
+    return `<div class="b ${cls}">
+      <div class="pv">${race?'比赛':p+'%'}</div>
+      <div class="col" style="height:0" data-h="${Math.max(p,6)}"></div>
+      <div class="lb">${race?'D-0':'D'+d}</div>
+    </div>`;
+  }).join('');
+  const cols = $$('#bars .col');
+  if(STATIC_MODE){ cols.forEach(c=> c.style.height = c.dataset.h + '%'); }
+  else { cols.forEach((c,i)=> setTimeout(()=> c.style.height = c.dataset.h + '%', 40 + i*60)); }
+}
+
+/* ================= C4 ================= */
+function drawC4(){
+  const svg = $('#c4chart');
+  const W=980,H=240,L=46,R=962,T=22,B=186;
+  const load = window.C4_LOAD || [62,70,64,78,85,80,88,92,86,90,95,98,92,88,84,90,94,96,92,88,90];
+  const recover = window.C4_REC || [78,74,70,66,62,60,58,54,52,50,47,45,44,46,49,52,55,58,60,62,64];
+  const n = load.length;
+  const X=i=>L+(R-L)*i/(n-1);
+  const Y=v=>B-(v-20)/(110-20)*(B-T);
+
+  const mk = (arr)=>arr.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
+  // 负荷高于恢复的区段
+  let shade='';
+  for(let i=0;i<n-1;i++){
+    if(load[i]>recover[i] && load[i+1]>recover[i+1]){
+      shade+=`<rect x="${X(i).toFixed(1)}" y="${T}" width="${(X(i+1)-X(i)+0.6).toFixed(1)}" height="${B-T}" fill="#B3261E" opacity=".06"/>`;
+    }
+  }
+  svg.innerHTML = `
+    ${shade}
+    <g stroke="#DCE6EE" stroke-width="1">
+      ${[20,50,80,110].map(v=>`<line x1="${L}" y1="${Y(v).toFixed(1)}" x2="${R}" y2="${Y(v).toFixed(1)}"/>`).join('')}
+    </g>
+    <g font-size="10" fill="#A9B7C3" font-family="Consolas" text-anchor="end">
+      ${[20,50,80,110].map(v=>`<text x="${L-8}" y="${(Y(v)+3.5).toFixed(1)}">${v}</text>`).join('')}
+    </g>
+    <path d="${mk(recover)}" fill="none" stroke="#4FB3DA" stroke-width="2" />
+    <path d="${mk(load)}" fill="none" stroke="#1B76B0" stroke-width="2.4" stroke-linejoin="round" />
+    <g font-size="10" fill="#A9B7C3" font-family="Consolas" text-anchor="middle">
+      <text x="${L}" y="${B+20}">D-20</text><text x="${(L+R)/2}" y="${B+20}">D-10</text><text x="${R}" y="${B+20}">今日</text>
+    </g>`;
+  svg.querySelectorAll('path[stroke]').forEach(el=> animateDraw(el, 1100));
+}
+
+let KPI4 = [
+  {k:'ACWR', v:'1.62', u:'', d:'超阈 1.3', bad:true},
+  {k:'HRV（rmssd）', v:'42', u:'ms', d:'基线 58 · −18%', bad:true},
+  {k:'晨脉', v:'63', u:'bpm', d:'基线 54 · +9', bad:true},
+  {k:'战术负荷 TLI', v:'78', u:'', d:'较上周 +12', bad:false}
+];
+function rollKpi(){
+  $('#c4kpi').innerHTML = KPI4.map(x=>`
+    <div class="kpi">
+      <div class="k">${x.k}</div>
+      <div class="v num"><span data-r="${x.v}">${STATIC_MODE ? x.v : 0}</span><span>${x.u}</span></div>
+      <div class="d ${x.bad?'bad':'good'}">${x.d}</div>
+    </div>`).join('');
+  $$('#c4kpi [data-r]').forEach(el=>{
+    if(STATIC_MODE){ return; }
+    const target = parseFloat(el.dataset.r);
+    const dec = (el.dataset.r.split('.')[1]||'').length;
+    const t0 = performance.now();
+    (function step(t){
+      const p = Math.min(1,(t-t0)/900), e = 1-Math.pow(1-p,3);
+      el.textContent = (target*e).toFixed(dec);
+      if(p<1) requestAnimationFrame(step); else el.textContent = el.dataset.r;
+    })(t0);
+  });
+}
+
+/* ================= C5 ================= */
+let adjusted = false;
+function buildRank(){
+  const rows = RANK.map(r=>{
+    if(adjusted){
+      const dir = r.adj > r.raw ? 'up' : 'down';
+      return `<div class="r">
+        <div class="av">${r.ini}</div>
+        <div><div class="nm">${r.n}</div><div class="why">${r.tag}</div></div>
+        <div class="pct"><span class="old">P${r.raw}</span></div>
+        <div class="pct ${dir}">P${r.adj}</div>
+        <div style="text-align:right"><span class="pill ${dir==='up'?'ok':'mute'} nodot">${r.mark}</span></div>
+      </div>`;
+    }
+    return `<div class="r">
+      <div class="av">${r.ini}</div>
+      <div><div class="nm">${r.n}</div><div class="why">${r.tag}</div></div>
+      <div class="pct"><span style="color:var(--gray35)">—</span></div>
+      <div class="pct">P${r.raw}</div>
+      <div style="text-align:right"><span class="pill mute nodot">未校正</span></div>
+    </div>`;
+  }).join('');
+  $('#rank').innerHTML = rows;
+}
+
+$('#sw').onclick = ()=>{
+  adjusted = !adjusted;
+  $('#sw').classList.toggle('on', adjusted);
+  $('#swhint').textContent = adjusted
+    ? '当前：已校正（按发育等价成绩重排）'
+    : '当前：未校正（按日历年龄排序）';
+  $('#rankhint').textContent = adjusted ? '原始 → 校正后百分位' : '原始百分位';
+  buildRank();
+  if(adjusted) toast('已按 PHV 阶段重排：2 人被低估');
+};
+
+/* ================= H1 ================= */
+let recTimer=null, recSec=0;
+function startRec(){
+  $('#startBtn').disabled = true;
+  $('#stopBtn').disabled = false;
+  $('#syncPill').textContent = '采集中';
+  $('#syncPill').className = 'pill amber';
+  recSec = 0;
+  recTimer = setInterval(()=>{
+    recSec++;
+    const h=String(Math.floor(recSec/3600)).padStart(2,'0');
+    const m=String(Math.floor(recSec/60)%60).padStart(2,'0');
+    const s=String(recSec%60).padStart(2,'0');
+    $('#dur').textContent = `${h}:${m}:${s}`;
+  }, 1000);
+  toast('已开始记录，采样率 200Hz');
+}
+function stopRec(){
+  clearInterval(recTimer);
+  $('#startBtn').disabled = false;
+  $('#stopBtn').disabled = true;
+  $('#syncPill').textContent = '已同步';
+  $('#syncPill').className = 'pill ok';
+  toast('已上传 ' + $('#dur').textContent + ' 的 IMU 数据');
+}
+
+/* ================= 启动 ================= */
+function goView(id){
+  $$('#nav button').forEach(x=>x.classList.toggle('on', x.dataset.v===id));
+  $$('.view').forEach(v=>v.classList.remove('on'));
+  $('#v-'+id).classList.add('on');
+  window.scrollTo(0,0);
+  if(id==='c4'){ drawC4(); rollKpi(); }
+  if(id==='c2') drawAcwr();
+  if(id==='c3') drawBars();
+}
+
+// 支持 ?v=c2 直接打开某个视图
+const initial = (new URLSearchParams(location.search)).get('v');
+if(initial && document.getElementById('v-'+initial)) goView(initial);
+
+buildStats();
+renderList();
+
+/* ============ 接后端 ============ */
+const LEVEL_UI = { green:['ok','正常','100%'], yellow:['amber','减量','建议 60%'],
+                   red:['risk','停训','转队医'], under:['ok','加量','可上调'],
+                   unknown:['mute','缺数据','补录晨脉'] };
+
+function badge(text, ok){
+  let el = document.getElementById('apiBadge');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'apiBadge';
+    el.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:150;font-size:11px;' +
+      'padding:6px 11px;border-radius:9px;background:#fff;border:1px solid var(--line);' +
+      'color:var(--gray);box-shadow:0 2px 8px rgba(11,44,77,.08)';
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.style.color = ok ? 'var(--ok)' : 'var(--gray)';
+  el.style.borderColor = ok ? 'rgba(46,125,111,.35)' : 'var(--line)';
+}
+
+async function hydrate(){
+  if(location.protocol === 'file:'){ badge('本地演示数据（用服务启动可接后端）', false); return; }
+  try{
+    const r = await fetch('/api/bh/today');
+    if(!r.ok) throw new Error('bad');
+    const d = await r.json();
+
+    STATS[0].v = d.cards.green || 0;
+    STATS[1].v = d.cards.yellow || 0;
+    STATS[2].v = d.cards.red || 0;
+
+    ATHLETES = d.athletes.slice(0, 10).map(a=>{
+      const ui = LEVEL_UI[a.level] || LEVEL_UI.green;
+      return { id:a.athlete_id, n:a.name, ini:a.initial, lv:ui[0],
+               why:a.reason || '', act:ui[1], sub:ui[2] };
+    });
+
+    const top = document.querySelector('.stat');
+    if(top){ document.querySelectorAll('.stat').forEach(x=>x.classList.remove('on')); top.classList.add('on'); }
+    buildStats(); renderList();
+
+    document.querySelector('#v-c1 .sub').textContent =
+      `${d.date} · 数据来自后端 · 平均疲劳指数 ${d.avg_fi}`;
+
+    // 周负荷曲线
+    try{
+      const wr = await fetch('/api/bh/weekly');
+      if(wr.ok){
+        const w = await wr.json();
+        if(w.acwr && w.acwr.length > 3){ window.ACWR_SERIES = w.acwr; drawAcwr(); }
+        if(w.alerts && w.alerts.length){
+          ABNORMAL = w.alerts.slice(0,4).map(a=>{
+            const ui = LEVEL_UI[a.level] || LEVEL_UI.amber;
+            return { n:a.name, ini:a.initial, why:a.reason || '',
+                     lv:ui[0]==='ok'?'amber':ui[0], act:ui[1], sub:ui[2] };
+          });
+          buildAbnormal();
+        }
+      }
+    }catch(e){}
+
+    // 预取风险最高的一名，让「运动员详情」首屏就是真数据
+    if(ATHLETES.length){
+      try{
+        const ar = await fetch('/api/bh/athlete/' + ATHLETES[0].id);
+        if(ar.ok) applyAthlete(await ar.json());
+      }catch(e){}
+    }
+    badge('已连接后端', true);
+  }catch(err){
+    badge('本地演示数据（后端未连接）', false);
+  }
+}
+
+// 把某个运动员的数据灌进 C4
+function applyAthlete(d){
+  if(d.series && d.series.length > 3){
+    const mx = Math.max(...d.series.map(x=>x.load), 1);
+    window.C4_LOAD = d.series.map(x=>Math.round(x.load / mx * 100));
+    window.C4_REC = d.series.map(x=>Math.round(x.recovery));
+  }
+  const m = d.metrics || {};
+  KPI4[0].v = String(m.acwr ?? '—'); KPI4[0].d = `疲劳指数 ${m.fi}`;
+  KPI4[1].v = String(m.hrv ?? '—'); KPI4[1].d = `基线变化 ${m.hrv_delta}%`;
+  KPI4[2].v = String(m.rhr ?? '—'); KPI4[2].d = `较基线 ${m.rhr_delta > 0 ? '+' : ''}${m.rhr_delta}`;
+  KPI4[3].v = String(m.tli ?? '—'); KPI4[3].d = '短道专项外部负荷';
+  const ui = LEVEL_UI[m.level] || LEVEL_UI.green;
+  document.querySelector('#v-c4 h1').innerHTML =
+    d.athlete.name + ' <span class="pill ' + ui[0] +
+    '" style="vertical-align:5px;margin-left:6px">' + ui[1] + '</span>';
+  document.querySelector('#v-c4 .sub').textContent =
+    `${d.athlete.group_name} · ${d.athlete.age} 岁 · 主项 ${d.athlete.event}`;
+  const judge = document.querySelector('#v-c4 .card:last-child .bd');
+  if(judge) judge.textContent = m.reason || '';
+  if(document.getElementById('v-c4').classList.contains('on')){ drawC4(); rollKpi(); }
+}
+
+// 点行 → 拉该运动员的真实数据再跳转
+document.addEventListener('click', async (ev)=>{
+  const row = ev.target.closest('#list .row');
+  if(!row || location.protocol === 'file:') return;
+  const a = ATHLETES.find(x=>x.id === row.dataset.id);
+  if(!a) return;
+  try{
+    const r = await fetch('/api/bh/athlete/' + a.id);
+    if(r.ok) applyAthlete(await r.json());
+  }catch(e){}
+});
+
+hydrate();
+buildAbnormal();
+buildCompose();
+buildRank();
+drawAcwr();
+$('#clock').textContent = '07:20';
+
+/* ---- 首次进入引导 ---- */
+window.addEventListener('DOMContentLoaded', function(){
+  const KEY = 'bh_guide_v1';
+  function open(){ document.getElementById('guide').classList.add('on'); }
+  function close(){ document.getElementById('guide').classList.remove('on');
+    try{ localStorage.setItem(KEY,'1'); }catch(e){} }
+  window.openGuide = open;
+  window.closeGuide = close;
+  document.getElementById('guideGo').onclick = close;
+  document.getElementById('helpBtn').onclick = open;
+  document.getElementById('guide').onclick = (e)=>{
+    if(e.target.id === 'guide') close();
+  };
+  let done = false;
+  try{ done = localStorage.getItem(KEY) === '1'; }catch(e){}
+  if(!done) setTimeout(open, 600);
+});
+
+</script>
+
+<div id="guide">
+  <div class="box">
+    <div class="k">随手三步</div>
+    <h3>冰衡怎么用</h3>
+    <ol><li>先看最上面三张卡上的红色数字——那是今天不能按计划练的人数。</li><li>点红色那一堆名单里的第一行，看这个人的负荷曲线。</li><li>曲线里出现<b>红色竖条</b>，就说明负荷压过了恢复，今天就降负荷。</li></ol>
+    <div class="foot">
+      <span class="tip">右下角的「?」随时能再打开</span>
+      <button id="guideGo">知道了</button>
+    </div>
+  </div>
+</div>
+<button id="helpBtn" title="怎么看">?</button>
+
+</body>
+</html>
