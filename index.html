@@ -1,951 +1,760 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>冰衡 · 短道速滑训练决策</title>
 <style>
 :root{
-  --ink:#0B1B2B; --navy:#0B2C4D; --ice:#1B76B0; --cyan:#4FB3DA;
-  --mist:#A8D8EC; --pale:#E8F2F8; --alt:#F4F8FB;
-  --gray:#5B6B7A; --gray35:#A9B7C3; --line:#DCE6EE;
-  --ok:#2E7D6F; --amber:#C9A227; --risk:#B3261E; --warn:#C84600;
-  --r:14px; --sh:0 1px 2px rgba(11,44,77,.06);
+  --ink:#12213a; --muted:#6b7a90; --line:#e6ebf3; --bg:#f7f9fc;
+  --ice:#0e3a5c; --ice2:#1d6f9e; --teal:#0f3f3a;
+  --amber:#d97706; --red:#c0392b; --green:#1d8a5c; --blue:#2f6df6;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{
-  font-family:"Microsoft YaHei","微软雅黑",-apple-system,sans-serif;
-  background:#EEF2F6; color:var(--ink); font-size:14px; line-height:1.6;
+  margin:0; background:var(--bg); color:var(--ink); line-height:1.75;
+  font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;
 }
-.num{font-variant-numeric:tabular-nums}
 button{font-family:inherit}
 
-/* ---- 外壳 ---- */
-.topbar{
-  position:sticky; top:0; z-index:50; background:#fff; border-bottom:1px solid var(--line);
-  padding:0 24px; height:60px; display:flex; align-items:center; gap:18px;
-}
-.logo{display:flex; align-items:center; gap:10px}
-.logo .m{width:30px;height:30px;border-radius:9px;background:var(--navy);display:grid;place-items:center}
-.logo .t{font-weight:700;color:var(--navy);font-size:15px;letter-spacing:.02em}
-.logo .s{font-size:9px;color:var(--gray35);letter-spacing:.16em;font-family:Consolas,monospace}
-nav{display:flex; gap:2px; margin-left:12px; overflow:auto}
-nav button{
-  border:none; background:transparent; color:var(--gray); font-size:13.5px;
-  padding:8px 13px; border-radius:9px; cursor:pointer; white-space:nowrap;
-}
-nav button:hover{background:var(--alt); color:var(--navy)}
-nav button.on{background:var(--pale); color:var(--navy); font-weight:600}
-.meta{margin-left:auto; font-size:12px; color:var(--gray35); white-space:nowrap}
-.meta b{color:var(--gray); font-weight:600}
+/* ---------- 顶栏 ---------- */
+header{position:sticky;top:0;z-index:30;background:rgba(247,249,252,.94);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header .in{max-width:1200px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header .brand{display:flex;align-items:center;gap:9px}
+header .mark{width:26px;height:26px;border-radius:8px;background:var(--ice);display:grid;place-items:center}
+header h1{font-size:15px;margin:0;letter-spacing:.02em}
+header .v{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:0 8px}
+header nav{display:flex;gap:3px;margin-left:auto;flex-wrap:wrap}
+header nav a{font-size:12.5px;color:#3c5a7e;text-decoration:none;padding:5px 10px;border-radius:8px;cursor:pointer}
+header nav a:hover{background:#eef3fa}
+header nav a.on{background:var(--ice);color:#fff}
+header .meta{font-size:11.5px;color:var(--muted);white-space:nowrap}
 
-.wrap{max-width:1180px; margin:0 auto; padding:24px}
-.view{display:none} .view.on{display:block}
+main{max-width:1200px;margin:0 auto;padding:22px 18px 80px}
+.view{display:none}.view.on{display:block}
 
-/* ---- 通用 ---- */
-.head{display:flex; align-items:baseline; gap:12px; margin-bottom:18px}
-.head h1{font-size:22px; font-weight:700; color:var(--navy); letter-spacing:.01em}
-.head .sub{font-size:12.5px; color:var(--gray)}
-.head .right{margin-left:auto; display:flex; gap:8px}
+/* ---------- 顶部标题行 ---------- */
+.bt-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.bt-top .t{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.bt-top .s{font-size:11.5px;color:var(--muted)}
+.bt-top .r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-.btn{
-  display:inline-flex; align-items:center; gap:6px; padding:9px 15px; border-radius:10px;
-  border:1px solid var(--line); background:#fff; color:var(--navy);
-  font-size:13px; font-weight:600; cursor:pointer; transition:.15s;
-}
-.btn:hover{border-color:var(--mist); background:var(--alt)}
-.btn.primary{background:var(--ice); border-color:var(--ice); color:#fff}
-.btn.primary:hover{background:#17679b}
-.btn.ghost{border-color:transparent; color:var(--gray)}
-.btn:disabled{opacity:.45; cursor:not-allowed}
-.btn.sm{padding:6px 11px; font-size:12px; border-radius:8px}
+/* ---------- 药丸 ---------- */
+.bt-pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11.5px;white-space:nowrap}
+.bt-pill .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+.bt-pill.g{background:#e9f6ef;color:var(--green)}
+.bt-pill.y{background:#fdf1e6;color:var(--amber)}
+.bt-pill.r{background:#fbeceb;color:var(--red)}
+.bt-pill.n{background:#eef3fa;color:#4a6386}
 
-.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
-.card .hd{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
-.card .hd h3{font-size:14px;font-weight:700;color:var(--navy)}
-.card .hd .hint{margin-left:auto;font-size:11.5px;color:var(--gray35)}
-.card .bd{padding:18px}
+/* ---------- 卡片 ---------- */
+.bt-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px}
 
-.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
-.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.85}
-.pill.nodot::before{display:none}
-.pill.ok{background:rgba(46,125,111,.1);color:var(--ok)}
-.pill.amber{background:rgba(201,162,39,.15);color:#8f7118}
-.pill.risk{background:rgba(179,38,30,.1);color:var(--risk)}
-.pill.mute{background:var(--alt);color:var(--gray)}
-.pill.ice{background:var(--pale);color:var(--ice)}
+/* ---------- 三态决策卡 ---------- */
+.bt-deck{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.bt-cardx{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:#fff;
+  transition:.25s;cursor:pointer}
+.bt-cardx:hover{transform:translateY(-1px)}
+.bt-cardx.sel{box-shadow:0 12px 28px rgba(8,19,31,.13);transform:translateY(-3px)}
+.bt-cardx.g{border-color:#b9dfc9;background:#f7fdfa}
+.bt-cardx.y{border-color:#f0c98a;background:#fffdf8}
+.bt-cardx.r{border-color:#e2b3ae;background:#fffafa}
+.bt-cardx .h{font-size:13px;font-weight:700}
+.bt-cardx .m{font-size:11px;color:var(--muted);margin-top:2px}
+.bt-cardx .x{font-size:30px;font-weight:800;margin-top:6px;letter-spacing:-1px;line-height:1.2}
+.bt-cardx .x small{font-size:11px;font-weight:600;color:var(--muted);margin-left:3px}
 
-.banner{display:flex;align-items:center;gap:10px;padding:11px 15px;border-radius:11px;font-size:12.5px;margin-bottom:16px;border:1px solid}
-.banner.warn{background:#FDF6E3;border-color:#EBD9A6;color:#7A5E12}
-.banner.err{background:rgba(179,38,30,.05);border-color:rgba(179,38,30,.18);color:var(--risk)}
-.banner .r{margin-left:auto;display:flex;gap:8px}
+/* ---------- 名单 ---------- */
+.bt-list{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden}
+.bt-row{display:grid;grid-template-columns:38px 1fr 84px 96px 40px;align-items:center;gap:10px;
+  padding:11px 15px;border-bottom:1px solid #f0f4f9;transition:.16s;cursor:pointer}
+.bt-row:last-child{border-bottom:none}
+.bt-row:hover{background:#fafcff}
+.bt-row:active{background:#f2f6fb}
+.bt-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#dbe9f5,#c2d8ee);
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:#31506e;font-weight:700}
+.bt-row .nm{font-size:13.5px;font-weight:600}
+.bt-row .sub{font-size:11px;color:var(--muted)}
+.bt-row .op{font-size:12px;color:#4a6386;text-align:right}
 
-/* ---- C1 今日卡 ---- */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
-.stat{
-  background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;
-  cursor:pointer;transition:.18s;position:relative;overflow:hidden;
-}
-.stat:hover{border-color:var(--mist)}
-.stat:active{transform:translateY(1px)}
-.stat.on{border-color:var(--ice);box-shadow:0 0 0 3px rgba(27,118,176,.1);transform:translateY(-3px)}
-.stat .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
-.stat .k{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
-.stat .d{font-size:11.5px;color:var(--gray35);margin-top:2px}
-.stat .v{font-size:38px;font-weight:700;line-height:1.15;margin-top:10px;letter-spacing:-.02em}
-.stat .v small{font-size:14px;font-weight:600;color:var(--gray35);margin-left:4px}
+/* ---------- 图表 ---------- */
+.bt-chart{position:relative;height:210px;background:#fff;border:1px solid var(--line);
+  border-radius:12px;overflow:hidden}
+.bt-chart svg{display:block;width:100%;height:100%}
+.bt-legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.bt-legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
 
-.list{display:flex;flex-direction:column}
-.row{
-  display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;
-  padding:14px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:.14s;
-}
-.row:last-child{border-bottom:none}
-.row:hover{background:#FBFDFE}
-.row:active{background:var(--alt)}
-.av{
-  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
-  font-size:13px;font-weight:700;background:var(--alt);color:var(--gray);flex:none;
-}
-.av.risk{background:rgba(179,38,30,.08);color:var(--risk)}
-.av.amber{background:rgba(201,162,39,.14);color:#8f7118}
-.nm{font-weight:600;color:var(--navy);font-size:14px}
-.why{font-size:12px;color:var(--gray);margin-top:1px}
-.act{font-size:12.5px;font-weight:600;color:var(--navy);text-align:right}
-.act small{display:block;font-size:11px;color:var(--gray35);font-weight:400}
-.chev{color:var(--gray35);font-size:16px}
+/* ---------- 指标格 ---------- */
+.bt-met{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.bt-m{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 13px}
+.bt-m .k{font-size:11px;color:var(--muted)}
+.bt-m .v{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-top:2px}
+.bt-m .v small{font-size:11px;font-weight:600;color:var(--muted);margin-left:2px}
+.bt-m .x{font-size:10.5px;color:var(--muted);margin-top:1px}
+.bt-m .x.bad{color:var(--red)}
 
-/* ---- 图表 ---- */
-.chart{width:100%;display:block}
-.legend{display:flex;gap:16px;font-size:11.5px;color:var(--gray);margin-top:10px;flex-wrap:wrap}
-.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+/* ---------- 按钮 ---------- */
+.bt-btn{border:none;border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:.18s}
+.bt-btn:active{transform:scale(.98)}
+.bt-btn.p{background:var(--ice);color:#fff}
+.bt-btn.p:hover{background:#0a2d49}
+.bt-btn.w{background:var(--amber);color:#fff}
+.bt-btn.g2{background:#fff;border:1px solid var(--line);color:#33415c}
+.bt-btn.g2:hover{border-color:#c8d8ee}
+.bt-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
 
-/* ---- C3 减量 ---- */
-.count{display:flex;align-items:flex-end;gap:14px;margin-bottom:6px}
-.count .big{font-size:62px;font-weight:700;color:var(--navy);line-height:1;letter-spacing:-.03em}
-.count .u{padding-bottom:9px;font-size:13px;color:var(--gray)}
-.bars{display:flex;align-items:flex-end;gap:12px;height:190px;padding-top:10px}
-.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
-.bars .col{width:100%;max-width:44px;border-radius:7px 7px 3px 3px;background:var(--ice);transition:height .8s cubic-bezier(.2,.8,.2,1)}
-.bars .b.rest .col{background:var(--mist)}
-.bars .b.race .col{background:var(--risk)}
-.bars .lb{font-size:10.5px;color:var(--gray35);margin-top:8px}
-.bars .pv{font-size:10.5px;color:var(--navy);font-weight:700;margin-bottom:6px}
+/* ---------- 减量柱 ---------- */
+.taper{display:flex;align-items:flex-end;gap:8px;height:170px;margin-top:10px}
+.taper .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.taper .col{width:100%;border-radius:6px 6px 0 0;height:0;transition:height .8s cubic-bezier(.2,.8,.2,1)}
+.taper .pv{font-size:10.5px;font-weight:700;color:var(--ice);margin-bottom:6px}
+.taper .lb{font-size:10px;color:var(--muted);margin-top:7px}
+.taper-axis{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:8px}
 
-/* ---- C4 个体 ---- */
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
-.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
-.kpi .k{font-size:11.5px;color:var(--gray)}
-.kpi .v{font-size:24px;font-weight:700;color:var(--navy);margin-top:4px;letter-spacing:-.01em}
-.kpi .v span{font-size:11px;font-weight:600;color:var(--gray35);margin-left:3px}
-.kpi .d{font-size:11px;margin-top:2px;color:var(--gray35)}
-.kpi .d.bad{color:var(--risk)} .kpi .d.good{color:var(--ok)}
+/* ---------- 开关 ---------- */
+.switch{width:48px;height:27px;border-radius:99px;background:#cfd9e6;position:relative;cursor:pointer;transition:.25s;flex:none}
+.switch span{position:absolute;left:3px;top:3px;width:21px;height:21px;border-radius:50%;background:#fff;
+  box-shadow:0 2px 5px rgba(0,0,0,.2);transition:.25s}
+.switch.on{background:var(--ice2)}
+.switch.on span{left:24px}
 
-.two{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+/* ---------- 设备 ---------- */
+.bt-skate{position:relative;height:200px;border-radius:12px;background:linear-gradient(180deg,#eaf2f9,#dbe8f4);overflow:hidden}
+.bt-skate .blade{position:absolute;left:20%;right:20%;bottom:26px;height:6px;border-radius:3px;background:#8fa8bf}
+.bt-skate .boot{position:absolute;left:26%;right:26%;bottom:32px;height:60px;border-radius:12px 12px 6px 6px;background:#fff;border:1px solid #c8d8ee}
+.bt-skate .mod{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);width:48px;height:36px;border-radius:8px;
+  background:var(--ice);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 14px rgba(14,58,92,.3);animation:btpulse 2s ease-in-out infinite}
+@keyframes btpulse{0%,100%{box-shadow:0 6px 14px rgba(14,58,92,.3)}50%{box-shadow:0 6px 22px rgba(29,111,158,.6)}}
+.bt-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:btblink 1.4s infinite}
+@keyframes btblink{0%,100%{opacity:1}50%{opacity:.25}}
 
-/* ---- C5 选苗 ---- */
-.switch{display:inline-flex;align-items:center;gap:10px;font-size:13px;color:var(--navy);font-weight:600}
-.sw{width:46px;height:26px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;transition:.2s;flex:none}
-.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.18)}
-.sw.on{background:var(--ice)} .sw.on::after{transform:translateX(20px)}
-.rank{display:flex;flex-direction:column}
-.rank .r{display:grid;grid-template-columns:auto 1fr 92px 92px 70px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line)}
-.rank .r:last-child{border-bottom:none}
-.pct{font-size:12px;font-weight:700;text-align:right}
-.pct .old{color:var(--gray35);text-decoration:line-through;font-weight:400;margin-right:6px}
-.up{color:var(--ok)} .down{color:var(--risk)}
+/* ---------- 提示条 ---------- */
+.note{border-left:4px solid var(--amber);background:#fffaf2;padding:10px 14px;border-radius:0 10px 10px 0;font-size:13px;margin:12px 0}
+.note.r{border-color:var(--red);background:#fdf3f2}
+.note.g{border-color:var(--green);background:#f2faf6}
+.bt-hint{font-size:11px;color:var(--muted);margin-top:8px}
 
-/* ---- H1 设备 ---- */
-.dev{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.devrow{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
-.devrow:last-child{border-bottom:none}
-.devrow span{color:var(--gray)}
-.devrow b{color:var(--navy)}
-.battery{display:flex;align-items:center;gap:10px}
-.bt{width:64px;height:12px;border:1.5px solid var(--gray35);border-radius:3px;padding:1.5px;position:relative}
-.bt::after{content:"";position:absolute;right:-4px;top:3px;width:2.5px;height:5px;background:var(--gray35);border-radius:0 1px 1px 0}
-.bt i{display:block;height:100%;background:var(--ok);border-radius:1px;transition:width .3s}
+/* ---------- toast ---------- */
+.bt-toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,16px);background:#12213a;color:#fff;
+  padding:9px 16px;border-radius:99px;font-size:12.5px;opacity:0;transition:.3s;pointer-events:none;z-index:99}
+.bt-toast.on{opacity:1;transform:translate(-50%,0)}
 
-/* ---- 空态 ---- */
-.empty{padding:46px 20px;text-align:center}
-.empty .ic{width:52px;height:52px;border-radius:15px;background:var(--alt);margin:0 auto 14px;display:grid;place-items:center;color:var(--gray35);font-size:22px}
-.empty h4{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px}
-.empty p{font-size:12.5px;color:var(--gray);max-width:340px;margin:0 auto 14px}
-
-.toast{
-  position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);
-  background:var(--navy);color:#fff;padding:11px 20px;border-radius:11px;font-size:13px;
-  opacity:0;pointer-events:none;transition:.25s;z-index:200;
-}
-.toast.on{opacity:1;transform:translate(-50%,0)}
-.dim{opacity:.42;pointer-events:none}
-
-
-/* ---- 首次进入引导 ---- */
-#guide{position:fixed;inset:0;background:rgba(11,44,77,.42);z-index:400;
-  display:none;place-items:center;padding:24px;backdrop-filter:blur(2px)}
+/* ---------- 引导 ---------- */
+#guide{position:fixed;inset:0;background:rgba(8,19,31,.45);z-index:400;display:none;place-items:center;padding:24px}
 #guide.on{display:grid}
-#guide .box{background:#fff;border-radius:18px;max-width:560px;width:100%;
-  padding:28px 30px 22px;box-shadow:0 24px 64px rgba(11,44,77,.25)}
-#guide .k{font-size:11.5px;letter-spacing:.14em;color:#A9B7C3;font-weight:700}
-#guide h3{font-size:21px;font-weight:700;color:#0B2C4D;margin:6px 0 16px}
-#guide ol{list-style:none;counter-reset:g;margin-bottom:20px}
-#guide li{counter-increment:g;position:relative;padding:12px 0 12px 44px;
-  border-bottom:1px solid #EEF3F7;font-size:13.5px;line-height:1.6;color:#22323F}
+#guide .box{background:#fff;border-radius:18px;max-width:560px;width:100%;padding:26px 28px 20px;
+  box-shadow:0 24px 64px rgba(8,19,31,.3)}
+#guide .k{font-size:11px;letter-spacing:.14em;color:#9aa7bb;font-weight:700}
+#guide h3{font-size:20px;margin:6px 0 14px}
+#guide ol{list-style:none;counter-reset:g;margin:0 0 18px;padding:0}
+#guide li{counter-increment:g;position:relative;padding:12px 0 12px 42px;border-bottom:1px solid #f0f4f9;
+  font-size:13.5px;line-height:1.65}
 #guide li:last-child{border-bottom:none}
-#guide li::before{content:counter(g);position:absolute;left:0;top:11px;
-  width:26px;height:26px;border-radius:50%;background:#1B76B0;color:#fff;
-  display:grid;place-items:center;font-size:13px;font-weight:700}
+#guide li::before{content:counter(g);position:absolute;left:0;top:11px;width:26px;height:26px;border-radius:50%;
+  background:var(--ice2);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700}
 #guide .foot{display:flex;align-items:center;gap:12px}
-#guide .tip{font-size:11.5px;color:#A9B7C3;flex:1}
-#guide button{border:none;background:#1B76B0;color:#fff;font-weight:700;
-  padding:10px 22px;border-radius:11px;font-size:13.5px;cursor:pointer;font-family:inherit}
-#guide button:hover{background:#17679b}
-#helpBtn{position:fixed;right:16px;bottom:52px;z-index:150;width:34px;height:34px;
-  border-radius:50%;border:1px solid #DCE6EE;background:#fff;color:#5B6B7A;
-  font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(11,44,77,.1)}
-#helpBtn:hover{border-color:#1B76B0;color:#1B76B0}
+#guide .tip{font-size:11.5px;color:var(--muted);flex:1}
+#helpBtn{position:fixed;right:18px;bottom:20px;z-index:150;width:34px;height:34px;border-radius:50%;
+  border:1px solid var(--line);background:#fff;color:var(--muted);font-size:15px;font-weight:700;
+  cursor:pointer;box-shadow:0 2px 8px rgba(8,19,31,.1)}
+
+/* ---------- 状态 ---------- */
+.empty{padding:44px 20px;text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:900px){
+  .bt-met{grid-template-columns:1fr 1fr}
+  .bt-row{grid-template-columns:34px 1fr 84px 34px}
+  .bt-row .op.mid{display:none}
+}
+@media(max-width:620px){
+  .bt-deck{grid-template-columns:1fr}
+  .bt-row{grid-template-columns:34px 1fr 34px}
+  .bt-row .op{display:none}
+}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="logo">
-    <div class="m"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 17c4 0 5-9 9-9s5 9 9 9"/></svg></div>
-    <div><div class="t">冰衡</div><div class="s">BINGHENG</div></div>
+<header><div class="in">
+  <div class="brand">
+    <div class="mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M3 17c4 0 5-9 9-9s5 9 9 9"/></svg></div>
+    <h1>冰衡</h1><span class="v">训练决策</span>
   </div>
   <nav id="nav">
-    <button data-v="c1" class="on">今日训练卡</button>
-    <button data-v="c2">周负荷</button>
-    <button data-v="c3">赛前减量</button>
-    <button data-v="c4">运动员详情</button>
-    <button data-v="c5">选苗</button>
-    <button data-v="h1">采集端</button>
+    <a data-v="c1" class="on">今日训练卡</a>
+    <a data-v="c2">周负荷</a>
+    <a data-v="c3">赛前减量</a>
+    <a data-v="c4">运动员详情</a>
+    <a data-v="c5">选苗</a>
+    <a data-v="h1">采集端</a>
   </nav>
-  <div class="meta">七台河 · 重点班　<b id="clock">07:20</b></div>
-</div>
+  <div class="meta" id="teamMeta">七台河 · 重点班</div>
+</div></header>
 
-<div class="wrap">
+<main>
 
 <!-- ================= C1 ================= -->
 <section class="view on" id="v-c1">
-  <div class="banner err" id="c1-err" style="display:none">
-    <span>⚠</span> 服务端连接失败，显示的是本地缓存数据
-    <div class="r"><button class="btn sm" onclick="retry()">重试</button></div>
-  </div>
-
-  <div class="head">
-    <h1>今日训练卡</h1>
-    <div class="sub">2026-11-07 周五 · 备战期第 3 周 · 数据已更新 07:20</div>
-    <div class="right">
-      <button class="btn sm" onclick="toggleEmpty()" id="emptyBtn">模拟：今日无课</button>
-      <button class="btn sm" onclick="toast('训练单已导出（mock）')">导出训练单</button>
+  <div class="bt-top">
+    <div><div class="t">今日训练卡</div><div class="s" id="c1sub">2026-11-07 周五 · 备战期第 3 周</div></div>
+    <div class="r">
+      <span class="bt-pill n"><span class="d"></span><span id="upd">数据已更新 07:20</span></span>
     </div>
   </div>
 
-  <div id="c1-body">
-    <div class="stats" id="stats"></div>
+  <div class="bt-deck" id="deck"></div>
 
-    <div class="card">
-      <div class="hd"><h3>今日名单</h3><span class="hint">按风险排序 · 点一行看详情</span></div>
-      <div class="list" id="list"></div>
-    </div>
-  </div>
+  <div class="bt-list" id="list"></div>
 
-  <div id="c1-empty" style="display:none">
-    <div class="card"><div class="empty">
-      <div class="ic">❄</div>
-      <h4>今天没有训练课</h4>
-      <p>建议运动员完成恢复打卡：睡眠、晨脉、主观疲劳。数据进来自动更新明日的决策卡。</p>
-      <button class="btn primary" onclick="toast('已下发恢复打卡提醒')">下发恢复打卡</button>
-    </div></div>
+  <div class="bt-actions">
+    <button class="bt-btn p" data-go="c2">查看周负荷</button>
+    <button class="bt-btn g2" onclick="toast('已导出今日训练单')">导出训练单</button>
   </div>
+  <div class="bt-hint">点三张卡可切换选中态，名单随之筛选；点任意一行看这名运动员。</div>
 </section>
 
 <!-- ================= C2 ================= -->
 <section class="view" id="v-c2">
-  <div class="head">
-    <h1>周负荷</h1>
-    <div class="sub">第 45 周 · 全队 25 人 · <b style="color:var(--risk)">3 人超阈</b></div>
-    <div class="right"><button class="btn sm" onclick="toast('已生成周报')">生成周报</button></div>
+  <div class="bt-top">
+    <div><div class="t">周负荷</div><div class="s" id="c2sub">第 45 周 · 全队 25 人</div></div>
+    <div class="r"><span class="bt-pill y" id="overPill"><span class="d"></span>3 人超阈</span></div>
   </div>
 
-  <div class="card" style="margin-bottom:16px">
-    <div class="hd"><h3>ACWR 走势</h3><span class="hint">安全区 0.8–1.3</span></div>
-    <div class="bd">
-      <svg class="chart" id="acwr" viewBox="0 0 720 220" height="220" preserveAspectRatio="none"></svg>
-      <div class="legend">
-        <span><i style="background:var(--ice)"></i>ACWR（7/28）</span>
-        <span><i style="background:var(--mist)"></i>慢性负荷</span>
-        <span><i style="background:#EBD9A6"></i>安全区 0.8–1.3</span>
-      </div>
-    </div>
+  <div class="bt-chart"><svg id="acwr" viewBox="0 0 1200 210" preserveAspectRatio="none"></svg></div>
+  <div class="bt-legend">
+    <span><i style="background:#1d6f9e"></i>ACWR（7 天 / 28 天）</span>
+    <span><i style="background:#b9dfc9"></i>安全区 0.8–1.3</span>
+    <span><i style="background:#c0392b"></i>超阈点</span>
   </div>
 
-  <div class="two" style="grid-template-columns:1fr 340px">
-    <div class="card">
-      <div class="hd"><h3>异常名单</h3><span class="hint">2 人</span></div>
-      <div class="list" id="abnormal"></div>
-    </div>
-    <div class="card">
-      <div class="hd"><h3>本周训练构成</h3></div>
-      <div class="bd" id="compose"></div>
-    </div>
+  <div class="bt-top" style="margin-top:18px">
+    <div><div class="t" style="font-size:14px">异常名单</div><div class="s">超阈与训练结构单一的人</div></div>
   </div>
+  <div class="bt-list" id="alerts"></div>
 </section>
 
 <!-- ================= C3 ================= -->
 <section class="view" id="v-c3">
-  <div class="head">
-    <h1>赛前减量</h1>
-    <div class="sub">省锦标赛 · 2026-11-17</div>
-    <div class="right"><button class="btn primary" onclick="toast('减量计划已下发给 25 人')">下发减量计划</button></div>
+  <div class="bt-top">
+    <div><div class="t">赛前减量 · 省锦标赛</div><div class="s" id="c3sub">还剩 10 天 · 目标负荷曲线</div></div>
+    <div class="r"><span class="bt-pill n"><span class="d"></span>减量期</span></div>
   </div>
 
-  <div class="card" style="margin-bottom:16px">
-    <div class="bd">
-      <div class="count"><div class="big num" id="days">10</div><div class="u">天后比赛 · 减量期</div></div>
-      <div style="font-size:12.5px;color:var(--gray);margin-bottom:4px">每日负荷目标（% 基线）</div>
-      <div class="bars" id="bars"></div>
-    </div>
+  <div class="bt-card">
+    <div class="s" style="font-size:11px;margin-bottom:4px">每日负荷目标（% 基线）</div>
+    <div class="taper" id="taper"></div>
   </div>
 
-  <div class="two">
-    <div class="card">
-      <div class="hd"><h3>今日建议</h3></div>
-      <div class="bd" style="font-size:13.5px;line-height:1.8;color:#22323F">
-        总量降至基线 <b style="color:var(--ice)">60%</b>，保留 <b>2 组 500m 起跑速度课</b>；
-        冰上时间不超过 <b>60 分钟</b>。<br>
-        减量期只减量、不减强度——强度是比赛感觉，减掉就找不回来了。
-      </div>
-    </div>
-    <div class="card">
-      <div class="hd"><h3>规则</h3></div>
-      <div class="bd" style="font-size:13px;color:var(--gray);line-height:2">
-        · 赛前 7–10 天开始减量<br>
-        · 总量降到 60–70%，强度保留<br>
-        · 减量期不做新动作教学
-      </div>
-    </div>
+  <div class="bt-card" style="margin-top:12px">
+    <div style="font-weight:700;font-size:13px;margin-bottom:4px">今日建议</div>
+    <div style="font-size:13px;line-height:1.9">总量降至基线 <b style="color:var(--ice2)">60%</b>，保留 2 组 500m 起跑速度课；冰上时间不超过 60 分钟。<br>
+    减量期只减量、不减强度——强度是比赛感觉，减掉就找不回来了。</div>
+  </div>
+
+  <div class="bt-actions">
+    <button class="bt-btn p" onclick="toast('减量计划已下发到教练端')">下发减量计划</button>
   </div>
 </section>
 
 <!-- ================= C4 ================= -->
 <section class="view" id="v-c4">
-  <div class="head">
-    <h1>王某 <span class="pill amber" style="vertical-align:5px;margin-left:6px">建议减量</span></h1>
-    <div class="sub">重点班 · 16 岁 · 主项 1000m</div>
-    <div class="right">
-      <button class="btn sm" onclick="toast('已加入减量名单')">加入减量名单</button>
-      <button class="btn sm" onclick="toast('已通知队医')">通知队医</button>
-    </div>
+  <div class="bt-top">
+    <div><div class="t" id="c4name">王某</div><div class="s" id="c4sub">重点班 · 16 岁 · 主项 1000m</div></div>
+    <div class="r"><span class="bt-pill y" id="c4pill"><span class="d"></span>建议减量</span></div>
   </div>
 
-  <div class="card">
-    <div class="hd"><h3>负荷 vs 恢复</h3><span class="hint">HRV 归一化后叠加</span></div>
-    <div class="bd"><svg class="chart" id="c4chart" viewBox="0 0 980 240" height="240" preserveAspectRatio="none"></svg>
-      <div class="legend">
-        <span><i style="background:var(--ice)"></i>训练负荷</span>
-        <span><i style="background:var(--cyan)"></i>恢复水平</span>
-        <span><i style="background:var(--risk)"></i>负荷超过恢复</span>
-      </div>
-    </div>
+  <div class="bt-met" id="c4met"></div>
+
+  <div class="bt-chart" style="margin-top:12px;height:190px"><svg id="c4chart" viewBox="0 0 1200 190" preserveAspectRatio="none"></svg></div>
+  <div class="bt-legend">
+    <span><i style="background:#1d6f9e"></i>训练负荷</span>
+    <span><i style="background:#37a58f"></i>恢复水平（HRV 归一）</span>
+    <span><i style="background:#c0392b"></i>负荷高于恢复</span>
   </div>
 
-  <div class="kpis" id="c4kpi"></div>
+  <div class="bt-card" style="margin-top:12px">
+    <div style="font-size:12.5px;line-height:1.9" id="c4why">—</div>
+  </div>
 
-  <div class="card">
-    <div class="hd"><h3>判断依据</h3></div>
-    <div class="bd" style="font-size:13.5px;line-height:1.9;color:#22323F">
-      近 7 天负荷持续高于恢复，<b>ACWR 1.62</b> 进入超阈区；HRV 较基线下降 18%，晨脉 +9bpm。
-      建议今天降到基线 <b>60%</b>，并补一次睡眠记录。
-    </div>
+  <div class="bt-actions">
+    <button class="bt-btn w" onclick="toast('已加入今日减量名单')">加入减量名单</button>
+    <button class="bt-btn g2" onclick="toast('已通知队医')">通知队医</button>
   </div>
 </section>
 
 <!-- ================= C5 ================= -->
 <section class="view" id="v-c5">
-  <div class="head">
-    <h1>选苗排行榜</h1>
-    <div class="sub">2026 秋季选苗 · 12–13 岁组 · 样本 68 人</div>
-    <div class="right"><button class="btn sm" onclick="toast('选苗建议已导出')">导出选苗建议</button></div>
+  <div class="bt-top">
+    <div><div class="t">2026 秋季选苗 · 12–13 岁组</div><div class="s">七台河 · 特色学校 + 体校重点班</div></div>
+    <div class="r"><span class="bt-pill n"><span class="d"></span>样本 68 人</span></div>
   </div>
 
-  <div class="banner warn">
-    <span>ⓘ</span> 附加模块，不参与每日训练决策。只回答一个问题：<b>谁可能被低估了</b>。
-  </div>
-
-  <div class="card" style="margin-bottom:16px">
-    <div class="bd" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-      <div class="switch">
-        <div class="sw" id="sw"></div>
-        <span>发育校正</span>
-      </div>
-      <span style="font-size:12px;color:var(--gray35)" id="swhint">当前：未校正（按日历年龄排序）</span>
+  <div class="bt-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div>
+      <div style="font-weight:700;font-size:13px">发育校正</div>
+      <div class="s" style="font-size:11px">开启后按 PHV 阶段重排百分位</div>
     </div>
+    <div class="switch" id="sw" onclick="toggleCorr()"><span></span></div>
   </div>
 
-  <div class="card">
-    <div class="hd"><h3>排行榜</h3><span class="hint" id="rankhint">原始百分位</span></div>
-    <div class="rank" id="rank"></div>
+  <div class="bt-chart" style="margin-top:12px;height:190px"><svg id="growth" viewBox="0 0 1200 190" preserveAspectRatio="none"></svg></div>
+  <div class="bt-legend">
+    <span><i style="background:#1d6f9e"></i>身高-年龄曲线</span>
+    <span><i style="background:#f0c98a"></i>PHV 突增期</span>
+  </div>
+
+  <div class="bt-list" id="rank" style="margin-top:12px"></div>
+  <div class="bt-hint" id="corrNote">当前：未校正（按日历年龄排序）</div>
+
+  <div class="bt-actions">
+    <button class="bt-btn p" onclick="toast('已导出选苗建议（低置信项已标注）')">导出选苗建议</button>
+    <button class="bt-btn g2" onclick="toast('已记录：3 人列入观察名单')">加入观察</button>
   </div>
 </section>
 
 <!-- ================= H1 ================= -->
 <section class="view" id="v-h1">
-  <div class="head">
-    <h1>冰刀 IMU 采集</h1>
-    <div class="sub">课次 · 2026-11-07 上午冰上</div>
+  <div class="bt-top">
+    <div><div class="t">设备采集</div><div class="s">课次 · 2026-11-07 上午冰上</div></div>
+    <div class="r"><span class="bt-pill g" id="syncPill"><span class="d"></span>已同步</span></div>
   </div>
 
-  <div class="dev">
-    <div class="card">
-      <div class="hd"><h3>设备状态</h3><span class="pill ok" id="syncPill">已同步</span></div>
-      <div class="bd">
-        <div class="devrow"><span>IMU 电量</span>
-          <div class="battery"><div class="bt"><i id="btfill" style="width:86%"></i></div><b>86%</b></div>
-        </div>
-        <div class="devrow"><span>采样率</span><b>200 Hz</b></div>
-        <div class="devrow"><span>心率带</span><b style="color:var(--ok)">已连接</b></div>
-        <div class="devrow"><span>本课已采</span><b class="num" id="dur">00:42:10</b></div>
-        <div class="devrow"><span>时间偏差</span><b>0.3 s</b></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="hd"><h3>采集控制</h3></div>
-      <div class="bd">
-        <div style="font-size:12.5px;color:var(--gray);line-height:1.9;margin-bottom:16px">
-          夹在冰刀鞋跟，防水防冰渣；采集滑行姿态、加速度、转向；
-          与心率带时间同步后再开始，否则会出现时间轴错位。
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn primary" id="startBtn" onclick="startRec()">开始记录</button>
-          <button class="btn" id="stopBtn" onclick="stopRec()" disabled>结束并上传</button>
-        </div>
-        <div class="banner warn" style="margin:18px 0 0;display:none" id="warnsync">
-          <span>⚠</span> 未同步，请先戴好设备再开始
-        </div>
-      </div>
-    </div>
+  <div class="bt-skate">
+    <div class="boot"></div><div class="blade"></div><div class="mod">IMU</div>
   </div>
 
-  <div class="card" style="margin-top:16px">
-    <div class="hd"><h3>指标口径</h3><span class="hint">与第 6 节一致</span></div>
-    <div class="bd" style="font-size:12.5px;color:var(--gray);line-height:2">
-      <b style="color:var(--navy)">TLI 战术负荷</b>：由 IMU 的转向频次、超越次数、弯道 G 值加权，反映短道专项外部负荷。 ·
-      <b style="color:var(--navy)">sRPE 负荷</b>：主观疲劳（1–10）× 课时长（min）。<br>
-      <span style="color:var(--warn)">诚实说明：ACWR 的预测效度在学界有争议（数学耦合），所以产品不做单指标预警，只做多指标融合 + 教练确认。</span>
-    </div>
+  <div class="bt-met">
+    <div class="bt-m"><div class="k">电量</div><div class="v" style="color:var(--green)">86%</div></div>
+    <div class="bt-m"><div class="k">采样率</div><div class="v">200 Hz</div></div>
+    <div class="bt-m"><div class="k">心率带</div><div class="v" style="color:var(--green)"><span class="bt-dot"></span> 已连接</div></div>
+    <div class="bt-m"><div class="k">本课已采</div><div class="v" id="dur">00:42:10</div></div>
   </div>
+
+  <div class="bt-actions">
+    <button class="bt-btn p" id="startBtn" onclick="startRec()">开始记录</button>
+    <button class="bt-btn g2" id="stopBtn" onclick="stopRec()" disabled>结束并上传</button>
+  </div>
+
+  <div class="note"><b>指标口径</b>：TLI 战术负荷由 IMU 的转向频次、超越次数、弯道 G 值加权，反映短道专项外部负荷；
+  sRPE 负荷 = 主观疲劳（1–10）× 课时长（min）。</div>
+  <div class="note r"><b>诚实说明</b>：ACWR 的预测效度在学界有争议（数学耦合问题）。所以产品不做单指标预警，只做多指标融合 + 教练确认。</div>
 </section>
 
-</div>
-<div class="toast" id="toast"></div>
+</main>
 
-<script>
-/* ================= 数据 ================= */
-let ATHLETES = [
-  {id:'w', n:'王某', ini:'王', lv:'amber', why:'ACWR 1.62 ↑ · HRV 下降 18%', act:'减量', sub:'建议 60%', fi:72},
-  {id:'l', n:'李某', ini:'李', lv:'risk',  why:'晨脉 +9bpm · 主观疲劳 8/10', act:'停训', sub:'转队医', fi:84},
-  {id:'z', n:'张某', ini:'张', lv:'ok',    why:'ACWR 1.05 · HRV 平稳', act:'正常', sub:'100%', fi:41},
-  {id:'q', n:'钱某', ini:'钱', lv:'ok',    why:'ACWR 0.92 · 恢复良好', act:'正常', sub:'100%', fi:38},
-  {id:'s', n:'孙某', ini:'孙', lv:'amber', why:'单调性 2.4 · 强度过于单一', act:'关注', sub:'调整结构', fi:64},
-  {id:'liu',n:'刘某', ini:'刘', lv:'mute', why:'昨日未打卡 · 数据缺失', act:'缺数据', sub:'补录晨脉', fi:null}
-];
-
-let STATS = [
-  {k:'正常训练', d:'负荷可维持基线', v:18, c:'var(--ok)'},
-  {k:'建议减量', d:'降到基线 60–70%', v:5,  c:'var(--amber)'},
-  {k:'停训观察', d:'转队医，不练', v:2,  c:'var(--risk)'}
-];
-
-let ABNORMAL = [
-  {n:'王某', ini:'王', why:'ACWR 1.62 · 连续 6 天训练', lv:'risk', act:'超阈', sub:'减量'},
-  {n:'孙某', ini:'孙', why:'单调性 2.4 · 强度过于单一', lv:'amber', act:'关注', sub:'调整'}
-];
-
-let RANK = [
-  {n:'陈某某', ini:'陈', tag:'PHV 前 · 出生 Q4（偏小）', raw:40, adj:62, mark:'观察', up:true},
-  {n:'周某某', ini:'周', tag:'PHV 后 · 出生 Q1（偏大）', raw:12, adj:38, mark:'重点', up:true},
-  {n:'吴某某', ini:'吴', tag:'PHV 中 · 数据完整', raw:25, adj:24, mark:'观察', up:false},
-  {n:'郑某某', ini:'郑', tag:'PHV 前 · 出生 Q3', raw:55, adj:71, mark:'观察', up:true},
-  {n:'冯某某', ini:'冯', tag:'PHV 后 · 出生 Q2', raw:30, adj:19, mark:'回落', up:false}
-];
-
-/* ================= 工具 ================= */
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const nf = n => n.toLocaleString('en-US');
-let toastTimer;
-function toast(msg){
-  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
-  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('on'), 2000);
-}
-const STATIC_MODE = !!new URLSearchParams(location.search).get('static');
-function animateDraw(el, ms=1000, delay=0){
-  if(STATIC_MODE){ el.style.strokeDasharray = 'none'; el.style.strokeDashoffset = 0; return; }
-  let len = 0;
-  try { len = el.getTotalLength(); } catch(e) { return; }
-  if(!len) return;
-  el.style.strokeDasharray = len;
-  el.style.strokeDashoffset = len;
-  setTimeout(()=>{
-    const t0 = performance.now();
-    (function step(t){
-      const p = Math.min(1, (t - t0) / ms);
-      el.style.strokeDashoffset = len * (1 - p);
-      if(p < 1) requestAnimationFrame(step);
-    })(t0);
-  }, delay);
-}
-
-function roll(el, to, ms=900){
-  if(STATIC_MODE){ el.textContent = to; return; }
-  const from = 0, t0 = performance.now();
-  function step(t){
-    const p = Math.min(1, (t - t0) / ms);
-    const e = 1 - Math.pow(1 - p, 3);
-    el.textContent = Math.round(from + (to - from) * e);
-    if(p < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-/* ================= 导航 ================= */
-$$('#nav button').forEach(b=>{
-  b.onclick = ()=>{
-    $$('#nav button').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');
-    $$('.view').forEach(v=>v.classList.remove('on'));
-    $('#v-' + b.dataset.v).classList.add('on');
-    window.scrollTo(0,0);
-    if(b.dataset.v === 'c2') drawAcwr();
-    if(b.dataset.v === 'c3') drawBars();
-    if(b.dataset.v === 'c4') { drawC4(); rollKpi(); }
-  };
-});
-
-/* ================= C1 ================= */
-function buildStats(){
-  $('#stats').innerHTML = STATS.map((s,i)=>`
-    <div class="stat${i===0?' on':''}" data-i="${i}">
-      <div class="bar" style="background:${s.c}"></div>
-      <div class="k">${s.k}</div>
-      <div class="d">${s.d}</div>
-      <div class="v num" style="color:${s.c}"><span data-v="${s.v}">0</span><small>人</small></div>
-    </div>`).join('');
-  $$('.stat').forEach(el=>{
-    el.onclick = ()=>{
-      $$('.stat').forEach(x=>x.classList.remove('on'));
-      el.classList.add('on');
-      const i = +el.dataset.i;
-      renderList(i);
-    };
-    const v = el.querySelector('[data-v]');
-    roll(v, +v.dataset.v);
-  });
-}
-
-function renderList(filter){
-  const map = {0:'ok', 1:'amber', 2:'risk'};
-  let rows = ATHLETES;
-  if(filter !== undefined) rows = ATHLETES.filter(a=>a.lv === map[filter]);
-  if(!rows.length){
-    $('#list').innerHTML = `<div class="empty"><div class="ic">○</div><h4>该分组下暂无运动员</h4><p>点上面的「正常训练」回到全部名单。</p></div>`;
-    return;
-  }
-  $('#list').innerHTML = rows.map(a=>`
-    <div class="row" data-id="${a.id}">
-      <div class="av ${a.lv==='mute'?'':a.lv}">${a.ini}</div>
-      <div><div class="nm">${a.n}</div><div class="why">${a.why}</div></div>
-      <div class="act">${a.act}<small>${a.sub}</small></div>
-      <div class="chev">›</div>
-    </div>`).join('');
-  $$('#list .row').forEach(r=>{
-    r.onclick = ()=>{
-      const a = ATHLETES.find(x=>x.id === r.dataset.id);
-      if(a.lv === 'mute'){ toast('请先补录晨脉与主观疲劳'); return; }
-      goView('c4');
-    };
-  });
-}
-
-function toggleEmpty(){
-  const on = $('#c1-empty').style.display === 'none';
-  $('#c1-body').style.display = on ? 'none' : '';
-  $('#c1-empty').style.display = on ? '' : 'none';
-  $('#emptyBtn').textContent = on ? '模拟：恢复正常' : '模拟：今日无课';
-}
-function retry(){ $('#c1-err').style.display='none'; toast('已重新连接'); }
-
-window.addEventListener('offline', ()=> $('#c1-err').style.display='');
-window.addEventListener('online', ()=> { $('#c1-err').style.display='none'; });
-
-/* ================= C2 ================= */
-function drawAcwr(){
-  const svg = $('#acwr');
-  const W=720,H=220,L=44,R=706,T=22,B=178;
-  const acute = (window.ACWR_SERIES && window.ACWR_SERIES.length > 3)
-    ? window.ACWR_SERIES
-    : [.9,1.0,1.1,1.2,1.28,1.35,1.42,1.5,1.55,1.62,1.58,1.5,1.42,1.36,
-       1.3,1.26,1.2,1.16,1.12,1.08,1.05,1.02,1.0,.98,.96,.94,.92,.9];
-  const days = acute.length;
-  const xy=(i,v)=>{const x=L+(R-L)*i/(days-1); const y=B-(v-.6)/(1.9-.6)*(B-T); return [x,y];};
-  let d='';
-  acute.forEach((v,i)=>{const [x,y]=xy(i,v); d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);});
-
-  const grid=[0.8,1.0,1.3,1.6];
-  const bandTop=xy(0,1.3)[1], bandBot=xy(0,0.8)[1];
-  svg.innerHTML = `
-    <rect x="${L}" y="${bandTop}" width="${R-L}" height="${bandBot-bandTop}" fill="#FDF6E3" opacity=".85"/>
-    <g stroke="#DCE6EE" stroke-width="1">
-      ${grid.map(v=>`<line x1="${L}" y1="${xy(0,v)[1].toFixed(1)}" x2="${R}" y2="${xy(0,v)[1].toFixed(1)}"/>`).join('')}
-    </g>
-    <g font-size="10" fill="#A9B7C3" font-family="Consolas" text-anchor="end">
-      ${grid.map(v=>`<text x="${L-8}" y="${(xy(0,v)[1]+3.5).toFixed(1)}">${v.toFixed(1)}</text>`).join('')}
-    </g>
-    <path d="${d}" fill="none" stroke="#1B76B0" stroke-width="2.4" stroke-linejoin="round"
-          />
-    <g font-size="10" fill="#A9B7C3" font-family="Consolas" text-anchor="middle">
-      <text x="${L}" y="${B+20}">W30</text><text x="${(L+R)/2}" y="${B+20}">W38</text><text x="${R}" y="${B+20}">W45</text>
-    </g>
-    <line x1="${xy(9,1.62)[0]}" y1="${T}" x2="${xy(9,1.62)[0]}" y2="${B}" stroke="#B3261E" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>
-    <circle cx="${xy(9,1.62)[0]}" cy="${xy(9,1.62)[1]}" r="4" fill="#B3261E"/>`;
-  svg.querySelectorAll('path[stroke]').forEach(el=> animateDraw(el, 1100));
-}
-
-function buildAbnormal(){
-  $('#abnormal').innerHTML = ABNORMAL.map(a=>`
-    <div class="row">
-      <div class="av ${a.lv}">${a.ini}</div>
-      <div><div class="nm">${a.n}</div><div class="why">${a.why}</div></div>
-      <div class="act">${a.act}<small>${a.sub}</small></div>
-      <div class="chev">›</div>
-    </div>`).join('');
-  $$('#abnormal .row').forEach(r=> r.onclick = ()=> goView('c4'));
-}
-
-function buildCompose(){
-  const items=[['冰上专项',58,'var(--ice)'],['陆地体能',26,'var(--cyan)'],['速度课',11,'var(--mist)'],['恢复课',5,'var(--ok)']];
-  $('#compose').innerHTML = items.map(([k,p,c])=>`
-    <div style="margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">
-        <span style="color:var(--gray)">${k}</span><b class="num">${p}%</b>
-      </div>
-      <div style="height:7px;background:var(--alt);border-radius:4px;overflow:hidden">
-        <div class="bar-grow" style="height:100%;width:${p}%;background:${c};border-radius:4px;transition:width .7s"></div>
-      </div>
-    </div>`).join('');
-  requestAnimationFrame(()=> $$('.bar-grow').forEach(b=> b.style.width = b.style.width));
-}
-
-/* ================= C3 ================= */
-function drawBars(){
-  const plan=[[-10,100],[-9,95],[-8,88],[-7,80],[-6,75],[-5,70],[-4,65],[-3,62],[-2,60],[-1,55],[0,0]];
-  $('#bars').innerHTML = plan.map(([d,p],i)=>{
-    const race = d===0;
-    const cls = race ? 'race' : (p<=62 ? 'rest' : '');
-    return `<div class="b ${cls}">
-      <div class="pv">${race?'比赛':p+'%'}</div>
-      <div class="col" style="height:0" data-h="${Math.max(p,6)}"></div>
-      <div class="lb">${race?'D-0':'D'+d}</div>
-    </div>`;
-  }).join('');
-  const cols = $$('#bars .col');
-  if(STATIC_MODE){ cols.forEach(c=> c.style.height = c.dataset.h + '%'); }
-  else { cols.forEach((c,i)=> setTimeout(()=> c.style.height = c.dataset.h + '%', 40 + i*60)); }
-}
-
-/* ================= C4 ================= */
-function drawC4(){
-  const svg = $('#c4chart');
-  const W=980,H=240,L=46,R=962,T=22,B=186;
-  const load = window.C4_LOAD || [62,70,64,78,85,80,88,92,86,90,95,98,92,88,84,90,94,96,92,88,90];
-  const recover = window.C4_REC || [78,74,70,66,62,60,58,54,52,50,47,45,44,46,49,52,55,58,60,62,64];
-  const n = load.length;
-  const X=i=>L+(R-L)*i/(n-1);
-  const Y=v=>B-(v-20)/(110-20)*(B-T);
-
-  const mk = (arr)=>arr.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
-  // 负荷高于恢复的区段
-  let shade='';
-  for(let i=0;i<n-1;i++){
-    if(load[i]>recover[i] && load[i+1]>recover[i+1]){
-      shade+=`<rect x="${X(i).toFixed(1)}" y="${T}" width="${(X(i+1)-X(i)+0.6).toFixed(1)}" height="${B-T}" fill="#B3261E" opacity=".06"/>`;
-    }
-  }
-  svg.innerHTML = `
-    ${shade}
-    <g stroke="#DCE6EE" stroke-width="1">
-      ${[20,50,80,110].map(v=>`<line x1="${L}" y1="${Y(v).toFixed(1)}" x2="${R}" y2="${Y(v).toFixed(1)}"/>`).join('')}
-    </g>
-    <g font-size="10" fill="#A9B7C3" font-family="Consolas" text-anchor="end">
-      ${[20,50,80,110].map(v=>`<text x="${L-8}" y="${(Y(v)+3.5).toFixed(1)}">${v}</text>`).join('')}
-    </g>
-    <path d="${mk(recover)}" fill="none" stroke="#4FB3DA" stroke-width="2" />
-    <path d="${mk(load)}" fill="none" stroke="#1B76B0" stroke-width="2.4" stroke-linejoin="round" />
-    <g font-size="10" fill="#A9B7C3" font-family="Consolas" text-anchor="middle">
-      <text x="${L}" y="${B+20}">D-20</text><text x="${(L+R)/2}" y="${B+20}">D-10</text><text x="${R}" y="${B+20}">今日</text>
-    </g>`;
-  svg.querySelectorAll('path[stroke]').forEach(el=> animateDraw(el, 1100));
-}
-
-let KPI4 = [
-  {k:'ACWR', v:'1.62', u:'', d:'超阈 1.3', bad:true},
-  {k:'HRV（rmssd）', v:'42', u:'ms', d:'基线 58 · −18%', bad:true},
-  {k:'晨脉', v:'63', u:'bpm', d:'基线 54 · +9', bad:true},
-  {k:'战术负荷 TLI', v:'78', u:'', d:'较上周 +12', bad:false}
-];
-function rollKpi(){
-  $('#c4kpi').innerHTML = KPI4.map(x=>`
-    <div class="kpi">
-      <div class="k">${x.k}</div>
-      <div class="v num"><span data-r="${x.v}">${STATIC_MODE ? x.v : 0}</span><span>${x.u}</span></div>
-      <div class="d ${x.bad?'bad':'good'}">${x.d}</div>
-    </div>`).join('');
-  $$('#c4kpi [data-r]').forEach(el=>{
-    if(STATIC_MODE){ return; }
-    const target = parseFloat(el.dataset.r);
-    const dec = (el.dataset.r.split('.')[1]||'').length;
-    const t0 = performance.now();
-    (function step(t){
-      const p = Math.min(1,(t-t0)/900), e = 1-Math.pow(1-p,3);
-      el.textContent = (target*e).toFixed(dec);
-      if(p<1) requestAnimationFrame(step); else el.textContent = el.dataset.r;
-    })(t0);
-  });
-}
-
-/* ================= C5 ================= */
-let adjusted = false;
-function buildRank(){
-  const rows = RANK.map(r=>{
-    if(adjusted){
-      const dir = r.adj > r.raw ? 'up' : 'down';
-      return `<div class="r">
-        <div class="av">${r.ini}</div>
-        <div><div class="nm">${r.n}</div><div class="why">${r.tag}</div></div>
-        <div class="pct"><span class="old">P${r.raw}</span></div>
-        <div class="pct ${dir}">P${r.adj}</div>
-        <div style="text-align:right"><span class="pill ${dir==='up'?'ok':'mute'} nodot">${r.mark}</span></div>
-      </div>`;
-    }
-    return `<div class="r">
-      <div class="av">${r.ini}</div>
-      <div><div class="nm">${r.n}</div><div class="why">${r.tag}</div></div>
-      <div class="pct"><span style="color:var(--gray35)">—</span></div>
-      <div class="pct">P${r.raw}</div>
-      <div style="text-align:right"><span class="pill mute nodot">未校正</span></div>
-    </div>`;
-  }).join('');
-  $('#rank').innerHTML = rows;
-}
-
-$('#sw').onclick = ()=>{
-  adjusted = !adjusted;
-  $('#sw').classList.toggle('on', adjusted);
-  $('#swhint').textContent = adjusted
-    ? '当前：已校正（按发育等价成绩重排）'
-    : '当前：未校正（按日历年龄排序）';
-  $('#rankhint').textContent = adjusted ? '原始 → 校正后百分位' : '原始百分位';
-  buildRank();
-  if(adjusted) toast('已按 PHV 阶段重排：2 人被低估');
-};
-
-/* ================= H1 ================= */
-let recTimer=null, recSec=0;
-function startRec(){
-  $('#startBtn').disabled = true;
-  $('#stopBtn').disabled = false;
-  $('#syncPill').textContent = '采集中';
-  $('#syncPill').className = 'pill amber';
-  recSec = 0;
-  recTimer = setInterval(()=>{
-    recSec++;
-    const h=String(Math.floor(recSec/3600)).padStart(2,'0');
-    const m=String(Math.floor(recSec/60)%60).padStart(2,'0');
-    const s=String(recSec%60).padStart(2,'0');
-    $('#dur').textContent = `${h}:${m}:${s}`;
-  }, 1000);
-  toast('已开始记录，采样率 200Hz');
-}
-function stopRec(){
-  clearInterval(recTimer);
-  $('#startBtn').disabled = false;
-  $('#stopBtn').disabled = true;
-  $('#syncPill').textContent = '已同步';
-  $('#syncPill').className = 'pill ok';
-  toast('已上传 ' + $('#dur').textContent + ' 的 IMU 数据');
-}
-
-/* ================= 启动 ================= */
-function goView(id){
-  $$('#nav button').forEach(x=>x.classList.toggle('on', x.dataset.v===id));
-  $$('.view').forEach(v=>v.classList.remove('on'));
-  $('#v-'+id).classList.add('on');
-  window.scrollTo(0,0);
-  if(id==='c4'){ drawC4(); rollKpi(); }
-  if(id==='c2') drawAcwr();
-  if(id==='c3') drawBars();
-}
-
-// 支持 ?v=c2 直接打开某个视图
-const initial = (new URLSearchParams(location.search)).get('v');
-if(initial && document.getElementById('v-'+initial)) goView(initial);
-
-buildStats();
-renderList();
-
-/* ============ 接后端 ============ */
-const LEVEL_UI = { green:['ok','正常','100%'], yellow:['amber','减量','建议 60%'],
-                   red:['risk','停训','转队医'], under:['ok','加量','可上调'],
-                   unknown:['mute','缺数据','补录晨脉'] };
-
-function badge(text, ok){
-  let el = document.getElementById('apiBadge');
-  if(!el){
-    el = document.createElement('div');
-    el.id = 'apiBadge';
-    el.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:150;font-size:11px;' +
-      'padding:6px 11px;border-radius:9px;background:#fff;border:1px solid var(--line);' +
-      'color:var(--gray);box-shadow:0 2px 8px rgba(11,44,77,.08)';
-    document.body.appendChild(el);
-  }
-  el.textContent = text;
-  el.style.color = ok ? 'var(--ok)' : 'var(--gray)';
-  el.style.borderColor = ok ? 'rgba(46,125,111,.35)' : 'var(--line)';
-}
-
-async function hydrate(){
-  if(location.protocol === 'file:'){ badge('本地演示数据（用服务启动可接后端）', false); return; }
-  try{
-    const r = await fetch('/api/bh/today');
-    if(!r.ok) throw new Error('bad');
-    const d = await r.json();
-
-    STATS[0].v = d.cards.green || 0;
-    STATS[1].v = d.cards.yellow || 0;
-    STATS[2].v = d.cards.red || 0;
-
-    ATHLETES = d.athletes.slice(0, 10).map(a=>{
-      const ui = LEVEL_UI[a.level] || LEVEL_UI.green;
-      return { id:a.athlete_id, n:a.name, ini:a.initial, lv:ui[0],
-               why:a.reason || '', act:ui[1], sub:ui[2] };
-    });
-
-    const top = document.querySelector('.stat');
-    if(top){ document.querySelectorAll('.stat').forEach(x=>x.classList.remove('on')); top.classList.add('on'); }
-    buildStats(); renderList();
-
-    document.querySelector('#v-c1 .sub').textContent =
-      `${d.date} · 数据来自后端 · 平均疲劳指数 ${d.avg_fi}`;
-
-    // 周负荷曲线
-    try{
-      const wr = await fetch('/api/bh/weekly');
-      if(wr.ok){
-        const w = await wr.json();
-        if(w.acwr && w.acwr.length > 3){ window.ACWR_SERIES = w.acwr; drawAcwr(); }
-        if(w.alerts && w.alerts.length){
-          ABNORMAL = w.alerts.slice(0,4).map(a=>{
-            const ui = LEVEL_UI[a.level] || LEVEL_UI.amber;
-            return { n:a.name, ini:a.initial, why:a.reason || '',
-                     lv:ui[0]==='ok'?'amber':ui[0], act:ui[1], sub:ui[2] };
-          });
-          buildAbnormal();
-        }
-      }
-    }catch(e){}
-
-    // 预取风险最高的一名，让「运动员详情」首屏就是真数据
-    if(ATHLETES.length){
-      try{
-        const ar = await fetch('/api/bh/athlete/' + ATHLETES[0].id);
-        if(ar.ok) applyAthlete(await ar.json());
-      }catch(e){}
-    }
-    badge('已连接后端', true);
-  }catch(err){
-    badge('本地演示数据（后端未连接）', false);
-  }
-}
-
-// 把某个运动员的数据灌进 C4
-function applyAthlete(d){
-  if(d.series && d.series.length > 3){
-    const mx = Math.max(...d.series.map(x=>x.load), 1);
-    window.C4_LOAD = d.series.map(x=>Math.round(x.load / mx * 100));
-    window.C4_REC = d.series.map(x=>Math.round(x.recovery));
-  }
-  const m = d.metrics || {};
-  KPI4[0].v = String(m.acwr ?? '—'); KPI4[0].d = `疲劳指数 ${m.fi}`;
-  KPI4[1].v = String(m.hrv ?? '—'); KPI4[1].d = `基线变化 ${m.hrv_delta}%`;
-  KPI4[2].v = String(m.rhr ?? '—'); KPI4[2].d = `较基线 ${m.rhr_delta > 0 ? '+' : ''}${m.rhr_delta}`;
-  KPI4[3].v = String(m.tli ?? '—'); KPI4[3].d = '短道专项外部负荷';
-  const ui = LEVEL_UI[m.level] || LEVEL_UI.green;
-  document.querySelector('#v-c4 h1').innerHTML =
-    d.athlete.name + ' <span class="pill ' + ui[0] +
-    '" style="vertical-align:5px;margin-left:6px">' + ui[1] + '</span>';
-  document.querySelector('#v-c4 .sub').textContent =
-    `${d.athlete.group_name} · ${d.athlete.age} 岁 · 主项 ${d.athlete.event}`;
-  const judge = document.querySelector('#v-c4 .card:last-child .bd');
-  if(judge) judge.textContent = m.reason || '';
-  if(document.getElementById('v-c4').classList.contains('on')){ drawC4(); rollKpi(); }
-}
-
-// 点行 → 拉该运动员的真实数据再跳转
-document.addEventListener('click', async (ev)=>{
-  const row = ev.target.closest('#list .row');
-  if(!row || location.protocol === 'file:') return;
-  const a = ATHLETES.find(x=>x.id === row.dataset.id);
-  if(!a) return;
-  try{
-    const r = await fetch('/api/bh/athlete/' + a.id);
-    if(r.ok) applyAthlete(await r.json());
-  }catch(e){}
-});
-
-hydrate();
-buildAbnormal();
-buildCompose();
-buildRank();
-drawAcwr();
-$('#clock').textContent = '07:20';
-
-/* ---- 首次进入引导 ---- */
-window.addEventListener('DOMContentLoaded', function(){
-  const KEY = 'bh_guide_v1';
-  function open(){ document.getElementById('guide').classList.add('on'); }
-  function close(){ document.getElementById('guide').classList.remove('on');
-    try{ localStorage.setItem(KEY,'1'); }catch(e){} }
-  window.openGuide = open;
-  window.closeGuide = close;
-  document.getElementById('guideGo').onclick = close;
-  document.getElementById('helpBtn').onclick = open;
-  document.getElementById('guide').onclick = (e)=>{
-    if(e.target.id === 'guide') close();
-  };
-  let done = false;
-  try{ done = localStorage.getItem(KEY) === '1'; }catch(e){}
-  if(!done) setTimeout(open, 600);
-});
-
-</script>
+<div class="bt-toast" id="toast"></div>
 
 <div id="guide">
   <div class="box">
     <div class="k">随手三步</div>
     <h3>冰衡怎么用</h3>
-    <ol><li>先看最上面三张卡上的红色数字——那是今天不能按计划练的人数。</li><li>点红色那一堆名单里的第一行，看这个人的负荷曲线。</li><li>曲线里出现<b>红色竖条</b>，就说明负荷压过了恢复，今天就降负荷。</li></ol>
+    <ol>
+      <li>先看最上面三张卡上的红色数字——那是今天不能按计划练的人数。</li>
+      <li>点红色那一堆名单里的第一行，看这个人的负荷曲线。</li>
+      <li>曲线里出现<b>红色竖条</b>，就说明负荷压过了恢复，今天就降负荷。</li>
+    </ol>
     <div class="foot">
       <span class="tip">右下角的「?」随时能再打开</span>
-      <button id="guideGo">知道了</button>
+      <button class="bt-btn p" id="guideGo">知道了</button>
     </div>
   </div>
 </div>
 <button id="helpBtn" title="怎么看">?</button>
 
+<script>
+/* ================= 基础 ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const STATIC_MODE = !!new URLSearchParams(location.search).get('static');
+
+let toastTimer;
+function toast(m){
+  const t = $('#toast'); t.textContent = m; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('on'), 2000);
+}
+
+function animateDraw(el, ms=1100){
+  if (STATIC_MODE){ el.style.strokeDasharray = 'none'; el.style.strokeDashoffset = 0; return; }
+  let len = 0;
+  try { len = el.getTotalLength(); } catch(e) { return; }
+  if (!len) return;
+  el.style.strokeDasharray = len;
+  el.style.strokeDashoffset = len;
+  const t0 = performance.now();
+  (function step(t){
+    const p = Math.min(1,(t-t0)/ms);
+    el.style.strokeDashoffset = len*(1-p);
+    if (p < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+/* ================= 数据（与后端字段对应） ================= */
+const LV = {
+  green:  { pill:'g', text:'正常', act:'100%' },
+  yellow: { pill:'y', text:'减量', act:'建议 60%' },
+  red:    { pill:'r', text:'停训', act:'转队医' },
+  under:  { pill:'n', text:'偏低', act:'可上调' },
+  unknown:{ pill:'n', text:'缺数据', act:'补录' }
+};
+
+let DATA = {
+  cards: { green:18, yellow:5, red:2 },
+  athletes: [
+    {id:'m1', name:'王某', ini:'王', level:'yellow', why:'ACWR 1.62 ↑ · HRV 下降 18%'},
+    {id:'m2', name:'李某', ini:'李', level:'red',    why:'晨脉 +9bpm · 主观疲劳 8/10'},
+    {id:'m3', name:'张某', ini:'张', level:'green',  why:'ACWR 1.05 · HRV 平稳'},
+    {id:'m4', name:'刘某', ini:'刘', level:'unknown',why:'昨日未打卡 · 数据缺失'}
+  ],
+  sub: '2026-11-07 周五 · 备战期第 3 周',
+  updated: '数据已更新 07:20'
+};
+
+let FILTER = null;
+
+/* ================= 渲染：三态卡 ================= */
+function renderDeck(){
+  const c = DATA.cards;
+  const items = [
+    ['green','正常训练','负荷可维持基线', c.green||0, 'var(--green)'],
+    ['yellow','建议减量','降到基线 60–70%', c.yellow||0, 'var(--amber)'],
+    ['red','停训观察','转队医，不练', c.red||0, 'var(--red)']
+  ];
+  $('#deck').innerHTML = items.map(([k,h,m,v,color],i)=>`
+    <div class="bt-cardx ${k}${FILTER===k?' sel':''}" data-k="${k}">
+      <div class="h">${h}</div><div class="m">${m}</div>
+      <div class="x" style="color:${color}">${v}<small>人</small></div>
+    </div>`).join('');
+  $$('#deck .bt-cardx').forEach(el=>{
+    el.onclick = ()=>{
+      FILTER = (FILTER === el.dataset.k) ? null : el.dataset.k;
+      renderDeck(); renderList();
+    };
+  });
+}
+
+/* ================= 渲染：名单 ================= */
+function renderList(){
+  const rows = (DATA.athletes || []).filter(a => !FILTER || a.level === FILTER);
+  if (!rows.length){
+    $('#list').innerHTML = `<div class="empty">该分组下暂无运动员</div>`;
+    return;
+  }
+  $('#list').innerHTML = rows.map(a=>{
+    const ui = LV[a.level] || LV.unknown;
+    return `<div class="bt-row" data-id="${a.id}">
+      <div class="bt-av">${a.ini}</div>
+      <div><div class="nm">${a.name}</div><div class="sub">${a.why||''}</div></div>
+      <div><span class="bt-pill ${ui.pill}"><span class="d"></span>${ui.text}</span></div>
+      <div class="sub op mid">${ui.act}</div>
+      <div class="sub op">›</div>
+    </div>`;
+  }).join('');
+  $$('#list .bt-row').forEach(r=>{
+    r.onclick = ()=>{
+      const a = DATA.athletes.find(x=>x.id === r.dataset.id);
+      if (a && a.level === 'unknown'){ toast('请先补录晨脉与主观疲劳'); }
+      loadAthlete(r.dataset.id);
+      go('c4');
+    };
+  });
+}
+
+/* ================= C4 ================= */
+const C4_DEFAULT = {
+  name:'王某', sub:'重点班 · 16 岁 · 主项 1000m', level:'yellow',
+  met:[['ACWR','1.62','','超阈 1.3',true],['HRV（rmssd）','42','ms','基线 58 · −18%',true],
+       ['晨脉','58','bpm','基线 54 · +4',false],['战术负荷 TLI','7.8','','较上周 +12',false]],
+  load:[58,72,64,80,70,86,74,88,78,92,82,90,76,88],
+  rec:[70,68,66,63,60,57,55,52,50,48,49,52,55,58],
+  why:'近 7 天负荷持续高于恢复，ACWR 1.62 进入超阈区；建议今天降到基线 60%，并补一次睡眠记录。'
+};
+let C4 = JSON.parse(JSON.stringify(C4_DEFAULT));
+
+function renderC4(){
+  $('#c4name').textContent = C4.name;
+  $('#c4sub').textContent = C4.sub;
+  const ui = LV[C4.level] || LV.yellow;
+  $('#c4pill').className = 'bt-pill ' + ui.pill;
+  $('#c4pill').innerHTML = `<span class="d"></span>${ui.text === '停训' ? '停训观察' : ui.text === '减量' ? '建议减量' : ui.text === '正常' ? '正常训练' : ui.text}`;
+
+  $('#c4met').innerHTML = C4.met.map(([k,v,u,x,bad])=>`
+    <div class="bt-m">
+      <div class="k">${k}</div>
+      <div class="v" ${bad?'style="color:var(--red)"':''}>${v}<small>${u||''}</small></div>
+      <div class="x ${bad?'bad':''}">${x||''}</div>
+    </div>`).join('');
+
+  drawC4Chart();
+  $('#c4why').textContent = C4.why;
+}
+
+function drawC4Chart(){
+  const svg = $('#c4chart');
+  const W = 1200, H = 190, L = 44, R = 1180, T = 16, B = 160;
+  // 负荷按自身峰值归一，两条线才能放在同一坐标系里比高低
+  const mx = Math.max(...C4.load, 1);
+  C4.load = C4.load.map(v => Math.round(v / mx * 92));
+  const n = C4.load.length;
+  const X = i => L + (R-L) * i / Math.max(n-1,1);
+  const Y = v => B - (v/110) * (B-T);
+  const mk = arr => arr.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
+
+  let shade = '';
+  for (let i=0;i<n-1;i++){
+    if (C4.load[i] > C4.rec[i] && C4.load[i+1] > C4.rec[i+1]){
+      shade += `<rect x="${X(i).toFixed(1)}" y="${T}" width="${(X(i+1)-X(i)+0.6).toFixed(1)}" height="${B-T}" fill="#c0392b" opacity=".055"/>`;
+    }
+  }
+  svg.innerHTML = `
+    ${shade}
+    <g stroke="#eef3fa" stroke-width="1">
+      ${[0,30,60,90].map(v=>`<line x1="${L}" y1="${Y(v).toFixed(1)}" x2="${R}" y2="${Y(v).toFixed(1)}"/>`).join('')}
+    </g>
+    <path d="${mk(C4.rec)}" fill="none" stroke="#37a58f" stroke-width="2" opacity=".9"/>
+    <path id="c4load" d="${mk(C4.load)}" fill="none" stroke="#1d6f9e" stroke-width="2.4" stroke-linejoin="round"/>`;
+  animateDraw($('#c4load'), 1100);
+}
+
+/* ================= C2 ================= */
+let ACWR = [0.85,0.9,0.95,1.0,1.08,1.15,1.2,1.28,1.35,1.42,1.5,1.58,1.52,1.45,1.38,1.32,1.26,1.2,1.14,1.08,1.02,0.98,0.94,0.9];
+
+function drawAcwr(){
+  const svg = $('#acwr');
+  const W=1200,H=210,L=44,R=1180,T=20,B=170;
+  const n = ACWR.length;
+  const lo = 0.5, hi = 1.9;
+  const X = i => L + (R-L)*i/Math.max(n-1,1);
+  const Y = v => B - (v-lo)/(hi-lo)*(B-T);
+  const d = ACWR.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
+
+  const yTop = Y(1.3), yBot = Y(0.8);
+  const peakIdx = ACWR.indexOf(Math.max(...ACWR));
+
+  svg.innerHTML = `
+    <rect x="${L}" y="${yTop}" width="${R-L}" height="${yBot-yTop}" fill="#eef7f2"/>
+    <line x1="${L}" y1="${yTop}" x2="${R}" y2="${yTop}" stroke="#b9dfc9" stroke-dasharray="5 5"/>
+    <line x1="${L}" y1="${yBot}" x2="${R}" y2="${yBot}" stroke="#b9dfc9" stroke-dasharray="5 5"/>
+    <g font-size="11" fill="#9aa7bb" font-family="Consolas,monospace" text-anchor="end">
+      <text x="${L-8}" y="${Y(1.3)+4}">1.3</text>
+      <text x="${L-8}" y="${Y(0.8)+4}">0.8</text>
+    </g>
+    <path id="acwrLine" d="${d}" fill="none" stroke="#1d6f9e" stroke-width="2.6" stroke-linejoin="round"/>
+    <circle cx="${X(peakIdx)}" cy="${Y(ACWR[peakIdx])}" r="5" fill="#c0392b"/>`;
+  animateDraw($('#acwrLine'), 1200);
+}
+
+/* ================= C3 ================= */
+const TAPER = [['D-10',100],['D-9',95],['D-8',88],['D-7',80],['D-6',75],['D-5',70],['D-4',65],['D-3',62],['D-2',60],['D-1',55],['比赛',0]];
+const TAPER_COLOR = ['#cfe0f2','#c9dcef','#bcd8ee','#a8cde9','#96c3e2','#8fbcdf','#6fa8d2','#4a8ec0','#2f78a8','#1d6f9e','#c0392b'];
+
+function drawTaper(){
+  const box = $('#taper');
+  box.innerHTML = TAPER.map(([lb,v],i)=>`
+    <div class="b">
+      <div class="pv">${v?v+'%':'—'}</div>
+      <div class="col" data-h="${Math.max(v,4)}" style="background:${TAPER_COLOR[i]}"></div>
+      <div class="lb">${lb}</div>
+    </div>`).join('');
+  const cols = $$('#taper .col');
+  if (STATIC_MODE){ cols.forEach(c=> c.style.height = c.dataset.h + '%'); }
+  else { cols.forEach((c,i)=> setTimeout(()=> c.style.height = c.dataset.h + '%', 40 + i*55)); }
+}
+
+/* ================= C5 ================= */
+const RANK = [
+  {n:'陈某某', ini:'陈', tag:'PHV 前 · 出生 Q4（偏小）', raw:40, adj:62, mark:'观察'},
+  {n:'周某某', ini:'周', tag:'PHV 后 · 出生 Q1（偏大）', raw:12, adj:38, mark:'重点'},
+  {n:'吴某某', ini:'吴', tag:'PHV 中 · 数据完整', raw:25, adj:24, mark:'观察'},
+  {n:'郑某某', ini:'郑', tag:'PHV 前 · 出生 Q3', raw:55, adj:71, mark:'观察'},
+  {n:'冯某某', ini:'冯', tag:'PHV 后 · 出生 Q2', raw:30, adj:19, mark:'回落'}
+];
+let CORR = false;
+
+function renderRank(){
+  $('#rank').innerHTML = RANK.map(r=>{
+    if (!CORR){
+      return `<div class="bt-row">
+        <div class="bt-av">${r.ini}</div>
+        <div><div class="nm">${r.n}</div><div class="sub">${r.tag}</div></div>
+        <div class="sub op mid">原始 P${r.raw}</div>
+        <div><span class="bt-pill n"><span class="d"></span>未校正</span></div>
+        <div class="sub op">›</div></div>`;
+    }
+    const up = r.adj > r.raw;
+    return `<div class="bt-row">
+      <div class="bt-av">${r.ini}</div>
+      <div><div class="nm">${r.n}</div><div class="sub">${r.tag}</div></div>
+      <div class="sub op mid">P${r.raw} → P${r.adj}</div>
+      <div><span class="bt-pill ${up?'g':'y'}"><span class="d"></span>${up?'被低估':'回落'}</span></div>
+      <div class="sub op">›</div></div>`;
+  }).join('');
+  $('#corrNote').textContent = CORR
+    ? '当前：已校正（按发育等价成绩重排，2 人被低估）'
+    : '当前：未校正（按日历年龄排序）';
+}
+
+function toggleCorr(){
+  CORR = !CORR;
+  $('#sw').classList.toggle('on', CORR);
+  renderRank();
+  drawGrowth();
+}
+
+function drawGrowth(){
+  const svg = $('#growth');
+  const W=1200,H=190;
+  svg.innerHTML = `
+    <line x1="60" y1="18" x2="60" y2="160" stroke="#e3ebf5"/>
+    <line x1="60" y1="160" x2="1140" y2="160" stroke="#e3ebf5"/>
+    <text x="16" y="26" font-size="11" fill="#9aa7bb">身高</text>
+    <text x="1096" y="182" font-size="11" fill="#9aa7bb">年龄</text>
+    ${CORR?'<line x1="760" y1="18" x2="760" y2="160" stroke="#f0c98a" stroke-dasharray="5 5"/><text x="770" y="30" font-size="11" fill="#a06a1a">PHV 突增期</text>':''}
+    <path id="gline" d="M60 140 L200 130 L340 112 L480 82 L600 56 L700 38 L860 28 L1040 22"
+      fill="none" stroke="#1d6f9e" stroke-width="2.6"/>
+    <circle cx="600" cy="56" r="5" fill="#1d6f9e"/>
+    <text x="520" y="48" font-size="11" fill="#1d6f9e">晚发育</text>`;
+  animateDraw($('#gline'), 900);
+}
+
+/* ================= H1 ================= */
+let recTimer = null, recSec = 0;
+function startRec(){
+  $('#startBtn').disabled = true; $('#stopBtn').disabled = false;
+  $('#syncPill').className = 'bt-pill y';
+  $('#syncPill').innerHTML = '<span class="d"></span>采集中';
+  recSec = 0;
+  recTimer = setInterval(()=>{
+    recSec++;
+    const p = n => String(n).padStart(2,'0');
+    $('#dur').textContent = `${p(Math.floor(recSec/3600))}:${p(Math.floor(recSec/60)%60)}:${p(recSec%60)}`;
+  }, 1000);
+  toast('已开始记录，采样率 200Hz');
+}
+function stopRec(){
+  clearInterval(recTimer);
+  $('#startBtn').disabled = false; $('#stopBtn').disabled = true;
+  $('#syncPill').className = 'bt-pill g';
+  $('#syncPill').innerHTML = '<span class="d"></span>已同步';
+  toast('已结束并上传：' + $('#dur').textContent);
+}
+
+/* ================= 视图切换 ================= */
+function go(id){
+  $$('#nav a').forEach(a=> a.classList.toggle('on', a.dataset.v === id));
+  $$('.view').forEach(v=> v.classList.remove('on'));
+  const el = $('#v-' + id);
+  if (el) el.classList.add('on');
+  window.scrollTo(0,0);
+  if (id === 'c2') drawAcwr();
+  if (id === 'c3') drawTaper();
+  if (id === 'c4') renderC4();
+  if (id === 'c5') { renderRank(); drawGrowth(); }
+}
+document.addEventListener('click', e=>{
+  const a = e.target.closest('[data-go]');
+  if (a) go(a.dataset.go);
+});
+$$('#nav a').forEach(a=> a.onclick = ()=> go(a.dataset.v));
+
+/* ================= 接后端 ================= */
+async function loadAthlete(id){
+  if (location.protocol === 'file:' || !id || !/^A\d/.test(id)) return;
+  try{
+    const r = await fetch('/api/bh/athlete/' + id);
+    if (!r.ok) return;
+    const d = await r.json();
+    const m = d.metrics || {};
+    C4 = {
+      name: d.athlete.name,
+      sub: `${d.athlete.group_name} · ${d.athlete.age} 岁 · 主项 ${d.athlete.event}`,
+      level: m.level,
+      met: [
+        ['ACWR', (m.acwr ?? 0).toFixed(2), '', '安全区 0.8–1.3', (m.acwr||0) >= 1.3],
+        ['HRV（rmssd）', m.hrv ?? '—', 'ms', `基线变化 ${m.hrv_delta ?? '—'}%`, (m.hrv_delta||0) < -15],
+        ['晨脉', m.rhr ?? '—', 'bpm', `较基线 ${m.rhr_delta > 0 ? '+' : ''}${m.rhr_delta ?? '—'}`, (m.rhr_delta||0) >= 7],
+        ['战术负荷 TLI', m.tli ?? '—', '', '短道专项外部负荷', false]
+      ],
+      load: d.series.map(x=> Math.round(x.load / 6)),
+      rec: d.series.map(x=> Math.round(x.recovery)),
+      why: m.reason || ''
+    };
+  } catch(e){}
+}
+
+async function hydrate(){
+  if (location.protocol === 'file:') return;
+  try{
+    const r = await fetch('/api/bh/today');
+    if (!r.ok) throw new Error('bad');
+    const d = await r.json();
+    DATA.cards = d.cards;
+    DATA.athletes = d.athletes.map(a=>({
+      id: a.athlete_id, name: a.name, ini: a.initial, level: a.level, why: a.reason
+    }));
+    DATA.sub = `${d.date} · 平均疲劳指数 ${d.avg_fi}`;
+    DATA.updated = '数据已更新 07:20';
+    $('#c1sub').textContent = DATA.sub;
+    $('#upd').textContent = DATA.updated;
+    renderDeck(); renderList();
+
+    // 周负荷
+    try{
+      const wr = await fetch('/api/bh/weekly');
+      if (wr.ok){
+        const w = await wr.json();
+        if (w.acwr && w.acwr.length > 4){
+          ACWR = w.acwr.map(v => v == null ? 1 : v);
+        }
+        const over = (w.alerts || []).filter(a => a.level === 'red').length;
+        $('#overPill').innerHTML = `<span class="d"></span>${over} 人超阈`;
+        if (w.alerts && w.alerts.length){
+          $('#alerts').innerHTML = w.alerts.map(a=>{
+            const ui = LV[a.level] || LV.yellow;
+            return `<div class="bt-row" data-id="${a.athlete_id}">
+              <div class="bt-av">${a.initial}</div>
+              <div><div class="nm">${a.name}</div><div class="sub">${a.reason||''}</div></div>
+              <div><span class="bt-pill ${ui.pill}"><span class="d"></span>${ui.text}</span></div>
+              <div class="sub op mid">${ui.act}</div>
+              <div class="sub op">›</div></div>`;
+          }).join('');
+          $$('#alerts .bt-row').forEach(r=> r.onclick = ()=>{ loadAthlete(r.dataset.id); go('c4'); });
+        }
+      }
+    }catch(e){}
+
+    $('#c2sub').textContent = `近 ${ACWR.length} 天 · 全队 ${DATA.athletes.length} 人`;
+
+    // 预取风险最高的一人
+    if (DATA.athletes.length){
+      await loadAthlete(DATA.athletes[0].id);
+      renderC4();
+    }
+  }catch(e){
+    /* 保持内置示例 */
+  }
+}
+
+/* ================= 引导 ================= */
+(function(){
+  const KEY = 'bh_guide_v2';
+  const open = ()=> $('#guide').classList.add('on');
+  const close = ()=>{ $('#guide').classList.remove('on'); try{ localStorage.setItem(KEY,'1'); }catch(e){} };
+  $('#guideGo').onclick = close;
+  $('#helpBtn').onclick = open;
+  $('#guide').onclick = e=>{ if (e.target.id === 'guide') close(); };
+  let done = false;
+  try{ done = localStorage.getItem(KEY) === '1'; }catch(e){}
+  if (!done && !STATIC_MODE) setTimeout(open, 700);
+})();
+
+/* ================= 启动 ================= */
+const init = new URLSearchParams(location.search).get('v');
+renderDeck(); renderList();
+if (init && $('#v-' + init)) go(init);
+hydrate();
+</script>
 </body>
 </html>
