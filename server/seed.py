@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""建库与灌数据。运行：python products/server/seed.py
+"""建库与灌数据。运行：python server/seed.py
 
 数据是仿真的，但结构、字段与 PRD 第 7 节 / 第 5 节完全一致，
 换成真实数据时只替换本文件，接口与前端都不用改。

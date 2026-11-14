@@ -43,7 +43,7 @@
 # 1. 装依赖
 python -m venv .venv
 .venv\Scripts\activate          # Windows
-pip install fastapi uvicorn
+pip install -r requirements.txt
 
 # 2. 建库灌数据（25 名运动员 × 60 天仿真数据）
 python server/seed.py
@@ -53,6 +53,23 @@ python server/app.py
 ```
 
 打开 <http://127.0.0.1:8770/bingheng>　接口文档 <http://127.0.0.1:8770/docs>
+
+### 方式三：跑测试
+
+```bash
+python server/seed.py          # 测试依赖种子数据
+pytest tests/test_api.py -q    # 10 项接口契约测试
+```
+
+### 页面说明
+
+| 路径 | 需要的文件 | 状态 |
+|---|---|---|
+| `/bingheng` | `index.html`（仓库根目录，已有） | 可访问 |
+| `/zhixing` | `zhixing.html`（**仓库中未提供**） | 返回 404 + 提示，不会 500 |
+
+> 本次修复：`/bingheng` 之前固定读 `bingheng.html`，而仓库只有 `index.html`，导致页面 500。
+> 现在按 `bingheng.html → index.html` 顺序回退；`/zhixing` 缺文件时返回明确 404。
 
 > 页面右下角会显示「已连接后端」或「本地演示数据」——一眼能看出当前用的是哪种数据。
 

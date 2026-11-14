@@ -8,7 +8,7 @@
   /api/zx/*       知行接口
   /docs           自动生成的接口文档
 
-启动：python products/server/app.py
+启动：python server/app.py
 """
 from __future__ import annotations
 
@@ -59,14 +59,27 @@ def index():
     })
 
 
+def _page(*candidates: Path) -> FileResponse | JSONResponse:
+    """按顺序找页面文件；找不到时返回明确错误而不是 500。"""
+    for path in candidates:
+        if path.is_file():
+            return FileResponse(path, media_type="text/html")
+    return JSONResponse(
+        status_code=404,
+        content={"detail": "页面文件缺失：仓库中未提供该产品的 HTML。",
+                 "looked_for": [str(p.relative_to(ROOT)) for p in candidates]},
+    )
+
+
 @app.get("/bingheng", include_in_schema=False)
 def page_bh():
-    return FileResponse(ROOT / "bingheng.html", media_type="text/html")
+    # 习惯上仓库把冰衡首页命名为 index.html；兼容旧的 bingheng.html
+    return _page(ROOT / "bingheng.html", ROOT / "index.html")
 
 
 @app.get("/zhixing", include_in_schema=False)
 def page_zx():
-    return FileResponse(ROOT / "zhixing.html", media_type="text/html")
+    return _page(ROOT / "zhixing.html")
 
 
 # ================================================================ 冰衡
